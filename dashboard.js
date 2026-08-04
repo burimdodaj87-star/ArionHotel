@@ -183,9 +183,20 @@
       }
 
       rows = dataset.rows;
+      const rowsWithReferralField = rows.filter((row) =>
+        Object.prototype.hasOwnProperty.call(row, 'referral') ||
+        Object.prototype.hasOwnProperty.call(row, 'refferal') ||
+        Object.prototype.hasOwnProperty.call(row, 'Refferal') ||
+        Object.prototype.hasOwnProperty.call(row, 'Referral')
+      ).length;
+      const needsReferralRefresh = Number(dataset.dataVersion || 0) < 3 || rowsWithReferralField === 0;
       const importCount = Number(dataset.importCount || 1);
       const importLabel = importCount === 1 ? '1 CSV-Import' : `${importCount.toLocaleString('de-AT')} CSV-Importe`;
-      datasetMeta.textContent = `${importLabel} · zuletzt ${dataset.fileName || 'CSV-Datei'} am ${formatDateTime(dataset.importedAt)} · ${rows.length.toLocaleString('de-AT')} eindeutige Buchungen`;
+      const arionCount = rows.filter((row) => window.P6CSV.customerType(row) === 'Arion Kunde').length;
+      datasetMeta.textContent = `${importLabel} · zuletzt ${dataset.fileName || 'CSV-Datei'} am ${formatDateTime(dataset.importedAt)} · ${rows.length.toLocaleString('de-AT')} eindeutige Buchungen · ${arionCount.toLocaleString('de-AT')} Arion-Kunden`;
+      if (needsReferralRefresh) {
+        datasetMeta.innerHTML += ' · <strong class="data-warning">CSV bitte einmal neu importieren, damit Arion/Panda korrekt erkannt wird.</strong>';
+      }
       dashboardContent.hidden = false;
       render();
     } catch (error) {

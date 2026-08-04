@@ -67,6 +67,8 @@
       const activeP6 = rows.filter(window.P6CSV.isP6Active);
       const todayCheckIns = activeP6.filter((row) => row.fromDate === today).length;
       const todayCheckOuts = activeP6.filter((row) => row.toDate === today).length;
+      const arionCount = rows.filter((row) => window.P6CSV.customerType(row) === 'Arion Kunde').length;
+      const pandaCount = rows.length - arionCount;
       const previousFileNames = Array.isArray(previousDataset?.fileNames)
         ? previousDataset.fileNames
         : (previousDataset?.fileName ? [previousDataset.fileName] : []);
@@ -78,6 +80,7 @@
         fileNames,
         importCount,
         importedAt: new Date().toISOString(),
+        dataVersion: 3,
         fingerprint: window.P6CSV.hashString(text),
         totalRows: rows.length,
         rows,
@@ -89,6 +92,7 @@
         `${mergeResult.added.toLocaleString('de-AT')} neue Buchungen ergänzt, ` +
         `${mergeResult.updated.toLocaleString('de-AT')} bereits vorhandene Buchungen erkannt und aktualisiert. ` +
         `Gespeichert sind jetzt ${rows.length.toLocaleString('de-AT')} eindeutige Buchungen. ` +
+        `Davon ${arionCount.toLocaleString('de-AT')} Arion-Kunden und ${pandaCount.toLocaleString('de-AT')} Panda-Kunden. ` +
         `Für heute: ${todayCheckIns} Check-Ins und ${todayCheckOuts} Check-Outs.`,
         'success'
       );

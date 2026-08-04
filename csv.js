@@ -289,9 +289,36 @@
     return parking === 'P6' && !status.startsWith('CANCEL');
   }
 
+  function containsHotelImport(value) {
+    return String(value ?? '').toUpperCase().includes('HOTEL_IMPORT');
+  }
+
   function customerType(row) {
-    const referral = String(row?.referral ?? '').trim().toUpperCase();
-    return referral.includes('HOTEL_IMPORT') ? 'Arion Kunde' : 'Panda Kunde';
+    // Entscheidend ist nicht eine exakte Übereinstimmung. Sobald der Inhalt
+    // HOTEL_IMPORT enthält – z. B. HOTEL_IMPORT:805b225... – ist es ein Arion-Kunde.
+    const knownReferralValues = [
+      row?.referral,
+      row?.refferal,
+      row?.referrer,
+      row?.Refferal,
+      row?.Referral,
+      row?.Referrer,
+    ];
+
+    if (knownReferralValues.some(containsHotelImport)) return 'Arion Kunde';
+
+    // Zusätzliche Absicherung für ältere gespeicherte Datensätze oder abweichende
+    // Schreibweisen des Spaltennamens: alle Referral-/Refferal-Felder durchsuchen.
+    if (row && typeof row === 'object') {
+      for (const [key, value] of Object.entries(row)) {
+        const normalizedKey = normalizeHeader(key);
+        if (['referral', 'refferal', 'referrer'].includes(normalizedKey) && containsHotelImport(value)) {
+          return 'Arion Kunde';
+        }
+      }
+    }
+
+    return 'Panda Kunde';
   }
 
   function localToday() {

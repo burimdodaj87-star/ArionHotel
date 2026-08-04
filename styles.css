@@ -413,3 +413,5 @@ h2 { margin-bottom: 4px; }
   .drop-zone { padding: 32px 16px; }
   .actions .btn { width: 100%; }
 }
+
+.data-warning { color: #b54708; font-weight: 800; }
