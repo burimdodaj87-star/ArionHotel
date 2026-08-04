@@ -44,6 +44,10 @@
   const transferFormError = document.getElementById('transferFormError');
   const saveTransferButton = document.getElementById('saveTransferButton');
   const toast = document.getElementById('toast');
+  const transferAlert = document.getElementById('transferAlert');
+  const transferAlertTitle = document.getElementById('transferAlertTitle');
+  const transferAlertText = document.getElementById('transferAlertText');
+  const showDueTransfersButton = document.getElementById('showDueTransfers');
 
   let currentCheckIns = [];
   let currentTransfers = [];
@@ -52,6 +56,7 @@
   let lastFocusedElement = null;
   let toastTimer = null;
   let activeMobileLane = 'checkin';
+  let dueAlertTimer = null;
 
   function setActiveMobileLane(laneName, { focus = false } = {}) {
     if (!laneElements.has(laneName)) return;
@@ -190,6 +195,70 @@
     }).join('');
   }
 
+  function transferDateTime(transfer) {
+    const date = String(transfer?.date || '').trim();
+    const time = String(transfer?.time || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return null;
+    const value = new Date(`${date}T${time}:00`);
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  function isTransferDue(transfer, now = new Date()) {
+    if (transfer?.completed === true) return false;
+    const transferAt = transferDateTime(transfer);
+    if (!transferAt) return false;
+    return transferAt.getTime() <= now.getTime() + (20 * 60 * 1000);
+  }
+
+  function dueTransferText(transfers) {
+    if (!transfers.length) return '';
+    const first = transfers[0];
+    const persons = first.persons === 1 ? '1 Person' : `${first.persons} Personen`;
+    const additional = transfers.length > 1 ? ` · plus ${transfers.length - 1} weiterer Transfer` : '';
+    return `${first.time} Uhr · ${first.name || 'Ohne Name'} · ${persons}${additional}`;
+  }
+
+  async function refreshDueAlert() {
+    if (!transferAlert) return;
+
+    try {
+      const today = window.P6CSV.localToday();
+      const source = datePicker.value === today
+        ? currentTransfers
+        : await window.P6DB.getHotelTransfersForDate(today, pageConfig.parking);
+      const due = source
+        .filter((transfer) => isTransferDue(transfer))
+        .sort((a, b) => sortByTime(a, b, 'time'));
+
+      if (!due.length) {
+        transferAlert.hidden = true;
+        document.body.classList.remove('transfer-due-active');
+        document.querySelector('[data-lane-target="transfer"]')?.classList.remove('urgent');
+        return;
+      }
+
+      transferAlertTitle.textContent = due.length === 1
+        ? `${pageConfig.parking}: Hoteltransfer ist fällig`
+        : `${pageConfig.parking}: ${due.length} Hoteltransfers sind fällig`;
+      transferAlertText.textContent = dueTransferText(due);
+      transferAlert.hidden = false;
+      document.body.classList.add('transfer-due-active');
+      document.querySelector('[data-lane-target="transfer"]')?.classList.add('urgent');
+    } catch (error) {
+      console.error('Transferwarnung konnte nicht aktualisiert werden:', error);
+    }
+  }
+
+  async function openDueTransfers() {
+    const today = window.P6CSV.localToday();
+    if (datePicker.value !== today) {
+      datePicker.value = today;
+      await render();
+    }
+    setActiveMobileLane('transfer', { focus: true });
+    document.querySelector('.transfer-lane')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function makeTransferList(list, loadError = null) {
     if (loadError) {
       return `<div class="lane-error"><strong>Hoteltransfers nicht verfügbar</strong><span>${escapeHtml(loadError.message || 'Unbekannter Fehler')}</span></div>`;
@@ -206,10 +275,11 @@
 
     return list.map((transfer) => {
       const completed = transfer.completed === true;
+      const due = isTransferDue(transfer);
       const personsLabel = transfer.persons === 1 ? '1 Person' : `${transfer.persons} Personen`;
 
       return `
-        <article class="operation-item transfer-item ${completed ? 'completed' : ''}" data-transfer-id="${escapeHtml(transfer.id)}">
+        <article class="operation-item transfer-item ${completed ? 'completed' : ''} ${due ? 'due' : ''}" data-transfer-id="${escapeHtml(transfer.id)}">
           <div class="operation-time">${escapeHtml(transfer.time || '—')}</div>
           <div class="operation-body">
             <strong class="operation-name">${escapeHtml(transfer.name || 'Ohne Name')}</strong>
@@ -294,6 +364,7 @@
       transferContainer.innerHTML = makeTransferList(currentTransfers, transferLoadError);
       checkOutContainer.innerHTML = makeBookingList(currentCheckOuts, 'checkout');
       updateSummary();
+      await refreshDueAlert();
     } catch (error) {
       console.error(error);
       const message = escapeHtml(error.message || 'Daten konnten nicht geladen werden.');
@@ -350,6 +421,7 @@
     transfer.completed = newValue;
     item?.classList.toggle('completed', newValue);
     updateSummary();
+    await refreshDueAlert();
 
     try {
       await window.P6DB.updateHotelTransferCompleted(transfer.id, newValue);
@@ -359,6 +431,7 @@
       checkbox.checked = previousValue;
       item?.classList.toggle('completed', previousValue);
       updateSummary();
+      await refreshDueAlert();
       showToast(error.message || 'Transferstatus konnte nicht gespeichert werden.', 'error');
     } finally {
       checkbox.disabled = false;
@@ -482,6 +555,7 @@
 
       dashboardContent.hidden = false;
       await render();
+      dueAlertTimer = window.setInterval(refreshDueAlert, 30000);
     } catch (error) {
       console.error(error);
       loadingState.textContent = error.message || 'Die Online-Daten konnten nicht geladen werden.';
@@ -524,8 +598,14 @@
     if (event.target.closest('[data-close-transfer]')) closeTransferModal();
   });
 
+  showDueTransfersButton?.addEventListener('click', openDueTransfers);
+
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !transferModal.hidden) closeTransferModal();
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if (dueAlertTimer) window.clearInterval(dueAlertTimer);
   });
 
   init();

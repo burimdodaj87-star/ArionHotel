@@ -4,6 +4,7 @@
   const BOOKINGS_TABLE = 'p6_bookings';
   const IMPORTS_TABLE = 'p6_imports';
   const TRANSFERS_TABLE = 'hotel_transfers';
+  const PUSH_SUBSCRIPTIONS_TABLE = 'push_subscriptions';
   const UPSERT_CHUNK_SIZE = 200;
   let client = null;
 
@@ -268,13 +269,62 @@
     if (error) throw transferError('Transferstatus konnte nicht gespeichert werden', error);
   }
 
+
+  async function savePushSubscription({ subscription, parking, userAgent = '' }) {
+    const selectedParking = normalizeParking(parking);
+    const json = typeof subscription?.toJSON === 'function' ? subscription.toJSON() : subscription;
+    const endpoint = String(json?.endpoint || '').trim();
+    const p256dh = String(json?.keys?.p256dh || '').trim();
+    const auth = String(json?.keys?.auth || '').trim();
+
+    if (!endpoint || !p256dh || !auth) {
+      throw new Error('Die Push-Registrierung ist unvollständig.');
+    }
+
+    const payload = {
+      endpoint,
+      p256dh,
+      auth,
+      parking: selectedParking,
+      user_agent: String(userAgent || '').slice(0, 500),
+      enabled: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await getClient()
+      .from(PUSH_SUBSCRIPTIONS_TABLE)
+      .upsert(payload, { onConflict: 'endpoint,parking', ignoreDuplicates: false });
+
+    if (error) {
+      throw new Error(`Push-Benachrichtigung konnte nicht gespeichert werden: ${error.message}`);
+    }
+  }
+
+  async function disablePushSubscription(endpoint, parking) {
+    const selectedParking = normalizeParking(parking);
+    const cleanEndpoint = String(endpoint || '').trim();
+    if (!cleanEndpoint) return;
+
+    const { error } = await getClient()
+      .from(PUSH_SUBSCRIPTIONS_TABLE)
+      .update({ enabled: false, updated_at: new Date().toISOString() })
+      .eq('endpoint', cleanEndpoint)
+      .eq('parking', selectedParking);
+
+    if (error) {
+      throw new Error(`Push-Benachrichtigung konnte nicht deaktiviert werden: ${error.message}`);
+    }
+  }
+
   window.P6DB = {
     addHotelTransfer,
+    disablePushSubscription,
     addImport,
     countBookings,
     getBookingsForDate,
     getHotelTransfersForDate,
     getSummary,
+    savePushSubscription,
     updateCompleted,
     updateHotelTransferCompleted,
     upsertBookings,

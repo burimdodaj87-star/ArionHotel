@@ -4,31 +4,41 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest?v=20260804-push1">
+  <link rel="apple-touch-icon" href="app-icon-192.png?v=20260804-push1">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>P6 Tagesliste</title>
-  <link rel="stylesheet" href="styles.css?v=20260804-mobilecounts3">
+  <link rel="stylesheet" href="styles.css?v=20260804-push1">
 </head>
 <body data-parking="P6" data-hotel-label="Arion Kunde">
   <header class="topbar topbar-white partner-header">
     <div class="topbar-inner">
       <div class="partner-brand" aria-label="Arion Airport Hotel und Panda Parken">
-        <img class="partner-logo arion-logo" src="arion-hotel-logo.png?v=20260804-mobiletabs2" alt="Arion Airport Hotel">
+        <img class="partner-logo arion-logo" src="arion-hotel-logo.png?v=20260804-push1" alt="Arion Airport Hotel">
         <span class="logo-divider" aria-hidden="true"></span>
-        <img class="partner-logo panda-logo" src="panda-parken-logo.png?v=20260804-mobiletabs2" alt="Panda Parken">
-        <span class="parking-pill">P6</span>
+        <img class="partner-logo panda-logo" src="panda-parken-logo.png?v=20260804-push1" alt="Panda Parken">
       </div>
 
       <div class="header-tools">
-        <button id="openTransferModal" class="header-transfer-btn" type="button">
-          <span class="header-transfer-plus" aria-hidden="true">+</span>
-          <span>Transfer für Hotelgäste</span>
-        </button>
-        <nav class="top-nav" aria-label="Ansichten">
-          <a class="nav-link" href="p5.html">P5</a>
-          <a class="nav-link active" href="dashboard.html" aria-current="page">P6</a>
-          <a class="nav-link" href="index.html">CSV</a>
+        <div class="header-actions">
+          <button id="openTransferModal" class="header-transfer-btn" type="button">
+            <span class="header-transfer-plus" aria-hidden="true">+</span>
+            <span>Transfer für Hotelgäste</span>
+          </button>
+          <button id="enablePushButton" class="push-button" type="button" title="Benachrichtigungen 20 Minuten vor Hoteltransfers aktivieren">
+            <span class="push-button-icon" aria-hidden="true">🔔</span>
+            <span class="push-button-label">Benachrichtigungen</span>
+          </button>
+        </div>
+        <nav class="top-nav hotel-nav-row" aria-label="Ansichten">
+          <a class="nav-link hotel-nav life-nav" href="p5.html">Life Hotel</a>
+          <a class="nav-link csv-nav" href="csv.html">CSV</a>
+          <a class="nav-link hotel-nav arion-nav active" href="dashboard.html" aria-current="page">Arion Hotel</a>
         </nav>
       </div>
     </div>
@@ -38,6 +48,14 @@
     <div id="loadingState" class="card loading-state">P6-Online-Daten werden geladen …</div>
 
     <div id="dashboardContent" hidden>
+      <section id="transferAlert" class="transfer-alert" hidden aria-live="assertive">
+        <div class="transfer-alert-pulse" aria-hidden="true">!</div>
+        <div class="transfer-alert-copy">
+          <strong id="transferAlertTitle">Hoteltransfer ist fällig</strong>
+          <span id="transferAlertText"></span>
+        </div>
+        <button id="showDueTransfers" class="transfer-alert-button" type="button">Hoteltransfers öffnen</button>
+      </section>
 
 
       <section class="mobile-workspace" aria-label="Arbeitsansicht auswählen">
@@ -164,8 +182,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="csv.js?v=20260804-mobiletabs2"></script>
-  <script src="db.js?v=20260804-mobiletabs2"></script>
-  <script src="dashboard.js?v=20260804-mobiletabs2"></script>
+  <script src="csv.js?v=20260804-push1"></script>
+  <script src="db.js?v=20260804-push1"></script>
+  <script src="push-config.js?v=20260804-push1"></script>
+  <script src="push-notifications.js?v=20260804-push1"></script>
+  <script src="dashboard.js?v=20260804-push1"></script>
 </body>
 </html>

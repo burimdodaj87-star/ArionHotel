@@ -1,0 +1,3 @@
+Diese Dateien in das bestehende GitHub-Repository hochladen.
+Die bereits vorhandene supabase-config.js im Repository behalten.
+Die Supabase-Setup-Dateien aus dem anderen Ordner nicht in GitHub hochladen.
