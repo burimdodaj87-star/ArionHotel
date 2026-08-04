@@ -4,14 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>P6 CSV hochladen</title>
-  <link rel="stylesheet" href="styles.css?v=20260804-4">
+  <title>P5/P6 CSV hochladen</title>
+  <link rel="stylesheet" href="styles.css?v=20260804-6">
 </head>
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <div class="brand"><span class="brand-mark">P6</span><span>P6 Tagesliste</span></div>
-      <a class="nav-link" href="dashboard.html">Tagesliste öffnen</a>
+      <div class="brand"><span class="brand-mark">P</span><span>Parkplatz Tageslisten</span></div>
+      <nav class="top-nav" aria-label="Ansichten">
+        <a class="nav-link" href="p5.html">P5</a>
+        <a class="nav-link" href="dashboard.html">P6</a>
+      </nav>
     </div>
   </header>
 
@@ -19,7 +22,7 @@
     <section class="hero">
       <p class="eyebrow">CSV-Import</p>
       <h1>Buchungsdatei hochladen</h1>
-      <p class="lead">Lade die CSV-Datei aus dem Parking Admin hoch. Ausschließlich P6-Buchungen werden online in Supabase gespeichert. P1 bis P5 werden ignoriert.</p>
+      <p class="lead">Lade die CSV-Datei aus dem Parking Admin hoch. Es werden ausschließlich P5- und P6-Buchungen online in Supabase gespeichert. P1 bis P4 werden ignoriert.</p>
     </section>
 
     <section class="card upload-card">
@@ -34,18 +37,19 @@
 
       <div class="actions">
         <button id="importButton" class="btn btn-primary" type="button" disabled>Daten hinzufügen</button>
-        <a id="dashboardButton" class="btn btn-secondary" href="dashboard.html" hidden>Tagesliste öffnen</a>
+        <a id="p5DashboardButton" class="btn btn-secondary" href="p5.html" hidden>P5 Tagesliste öffnen</a>
+        <a id="p6DashboardButton" class="btn btn-secondary" href="dashboard.html" hidden>P6 Tagesliste öffnen</a>
       </div>
 
       <div id="notice" class="notice" aria-live="polite"></div>
-      <p class="privacy-note">Die P6-Buchungen werden online in Supabase gespeichert und sind dadurch auf beiden Arbeitsgeräten identisch.</p>
+      <p class="privacy-note">P5 und P6 werden online gespeichert. Beide Arbeitsgeräte sehen dieselben Buchungen und Häkchen.</p>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=20260804-4"></script>
-  <script src="csv.js?v=20260804-4"></script>
-  <script src="db.js?v=20260804-4"></script>
-  <script src="upload.js?v=20260804-4"></script>
+  <script src="csv.js?v=20260804-6"></script>
+  <script src="db.js?v=20260804-6"></script>
+  <script src="upload.js?v=20260804-6"></script>
 </body>
 </html>

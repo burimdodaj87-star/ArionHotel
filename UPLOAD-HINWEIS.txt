@@ -1,0 +1,20 @@
+P5-ERWEITERUNG – GLEICHES GITHUB-REPOSITORY
+
+1. In Supabase SQL Editor zuerst die Datei supabase-p5-update.sql vollständig ausführen.
+2. Danach diese Dateien in dasselbe GitHub-Repository hochladen/ersetzen:
+   index.html
+   dashboard.html
+   p5.html (neu)
+   styles.css
+   csv.js
+   db.js
+   upload.js
+   dashboard.js
+3. supabase-config.js NICHT ersetzen. Deine eingetragenen Zugangsdaten bleiben so erhalten.
+4. Webseite mit Strg+F5 neu laden.
+5. Die CSV einmal erneut hochladen. Die alte Version hat P5 ignoriert, deshalb müssen P5-Daten erst jetzt in Supabase gespeichert werden.
+
+P6 bleibt unverändert erhalten.
+P5: HOTEL_IMPORT enthalten = Life Hotel Kunde, sonst Panda Kunde.
+P6: HOTEL_IMPORT enthalten = Arion Kunde, sonst Panda Kunde.
+Dubletten bleiben E-Mail + Telefon + kompletter to-Wert.

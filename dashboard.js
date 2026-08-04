@@ -1,6 +1,11 @@
 (() => {
   'use strict';
 
+  const pageConfig = {
+    parking: String(document.body.dataset.parking || 'P6').toUpperCase(),
+    hotelLabel: String(document.body.dataset.hotelLabel || 'Arion Kunde'),
+  };
+
   const loadingState = document.getElementById('loadingState');
   const noDataState = document.getElementById('noDataState');
   const dashboardContent = document.getElementById('dashboardContent');
@@ -79,17 +84,17 @@
       const phoneHtml = phone
         ? (href ? `<a class="phone-link" href="${escapeHtml(href)}">${escapeHtml(phone)}</a>` : escapeHtml(phone))
         : '<span class="dataset-meta">Keine Nummer</span>';
-      const customerType = window.P6CSV.customerType(row);
-      const customerTypeClass = customerType === 'Arion Kunde' ? 'arion' : 'panda';
+      const customerType = window.P6CSV.customerType(row, pageConfig.parking);
+      const customerTypeClass = customerType === 'Panda Kunde' ? 'panda' : 'hotel';
 
       return `
         <tr class="${completed ? 'completed' : ''}" data-row-key="${escapeHtml(row.key)}">
-          <td class="time-cell">${escapeHtml(row[timeField] || '—')}</td>
-          <td class="customer-name">${escapeHtml(row.name || 'Ohne Name')}</td>
-          <td>${phoneHtml}</td>
-          <td class="price-cell">${displayPrice(row.pricing)}</td>
-          <td><span class="customer-status ${customerTypeClass}">${customerType}</span></td>
-          <td>
+          <td class="time-cell" data-label="Uhrzeit">${escapeHtml(row[timeField] || '—')}</td>
+          <td class="customer-name" data-label="Name">${escapeHtml(row.name || 'Ohne Name')}</td>
+          <td class="phone-cell" data-label="Telefon">${phoneHtml}</td>
+          <td class="price-cell" data-label="Betrag">${displayPrice(row.pricing)}</td>
+          <td class="status-cell" data-label="Status"><span class="customer-status ${customerTypeClass}">${escapeHtml(customerType)}</span></td>
+          <td class="done-cell" data-label="Erledigt">
             <label class="check-wrap">
               <input type="checkbox" data-direction="${direction}" data-key="${escapeHtml(row.key)}" ${completed ? 'checked' : ''}>
               <span>${actionLabel}</span>
@@ -127,10 +132,10 @@
     checkOutContainer.innerHTML = '<div class="empty-state">Daten werden geladen …</div>';
 
     try {
-      const rows = await window.P6DB.getBookingsForDate(selectedDate);
+      const rows = await window.P6DB.getBookingsForDate(selectedDate, pageConfig.parking);
       if (sequence !== renderSequence) return;
 
-      const activeRows = rows.filter(window.P6CSV.isP6Active);
+      const activeRows = rows.filter((row) => window.P6CSV.isActiveForParking(row, pageConfig.parking));
       currentCheckIns = activeRows
         .filter((row) => row.fromDate === selectedDate)
         .sort((a, b) => sortByTime(a, b, 'fromTime'));
@@ -183,7 +188,7 @@
     datePicker.value = window.P6CSV.localToday();
 
     try {
-      const summary = await window.P6DB.getSummary();
+      const summary = await window.P6DB.getSummary(pageConfig.parking);
       loadingState.hidden = true;
 
       if (!summary.totalRows) {
@@ -196,8 +201,8 @@
         : `${summary.importCount.toLocaleString('de-AT')} CSV-Importe`;
       const latest = summary.latestImport;
       datasetMeta.textContent = latest
-        ? `${importLabel} · zuletzt ${latest.file_name} am ${formatDateTime(latest.imported_at)} · ${summary.totalRows.toLocaleString('de-AT')} P6-Buchungen online`
-        : `${summary.totalRows.toLocaleString('de-AT')} P6-Buchungen online`;
+        ? `${importLabel} · zuletzt ${latest.file_name} am ${formatDateTime(latest.imported_at)} · ${summary.totalRows.toLocaleString('de-AT')} ${pageConfig.parking}-Buchungen online`
+        : `${summary.totalRows.toLocaleString('de-AT')} ${pageConfig.parking}-Buchungen online`;
 
       dashboardContent.hidden = false;
       await render();

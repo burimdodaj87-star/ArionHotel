@@ -1,10 +1,20 @@
 (() => {
   'use strict';
 
+  // Der bestehende Tabellenname bleibt erhalten, damit keine P6-Daten migriert werden müssen.
+  // Die Tabelle speichert ab dieser Version P5 und P6.
   const BOOKINGS_TABLE = 'p6_bookings';
   const IMPORTS_TABLE = 'p6_imports';
   const UPSERT_CHUNK_SIZE = 300;
   let client = null;
+
+  function normalizeParking(value) {
+    const parking = String(value || '').trim().toUpperCase();
+    if (!['P5', 'P6'].includes(parking)) {
+      throw new Error(`Nicht unterstützter Parkplatz: ${parking || 'leer'}`);
+    }
+    return parking;
+  }
 
   function getClient() {
     if (client) return client;
@@ -14,7 +24,7 @@
     const anonKey = String(config.anonKey || '').trim();
 
     if (!url || url.includes('HIER_SUPABASE') || !anonKey || anonKey.includes('HIER_SUPABASE')) {
-      throw new Error('Supabase ist noch nicht eingerichtet. Trage Project URL und Publishable/anon key in supabase-config.js ein.');
+      throw new Error('Supabase ist noch nicht eingerichtet. Trage Project URL und Publishable Key in supabase-config.js ein.');
     }
     if (!window.supabase?.createClient) {
       throw new Error('Die Supabase-Bibliothek konnte nicht geladen werden.');
@@ -31,6 +41,7 @@
   }
 
   function toDbRow(row, sourceFile) {
+    const parking = normalizeParking(row.parking);
     return {
       dedupe_key: window.P6CSV.bookingIdentity(row),
       booking_id: String(row.id || ''),
@@ -45,7 +56,7 @@
       to_date: row.toDate || null,
       to_time: String(row.toTime || ''),
       booking_status: String(row.status || ''),
-      parking: 'P6',
+      parking,
       referral: String(row.referral || ''),
       source_row: Number.isFinite(Number(row.sourceRow)) ? Number(row.sourceRow) : null,
       source_file: String(sourceFile || ''),
@@ -91,26 +102,28 @@
     return dbRows.length;
   }
 
-  async function addImport({ fileName, fingerprint, csvRows, p6Rows }) {
+  async function addImport({ fileName, fingerprint, csvRows, p5Rows, p6Rows }) {
     const { error } = await getClient()
       .from(IMPORTS_TABLE)
       .insert({
         file_name: String(fileName || ''),
         fingerprint: String(fingerprint || ''),
         csv_rows: Number(csvRows || 0),
+        p5_rows: Number(p5Rows || 0),
         p6_rows: Number(p6Rows || 0),
       });
     if (error) throw new Error(`Import-Protokoll konnte nicht gespeichert werden: ${error.message}`);
   }
 
-  async function getBookingsForDate(date) {
+  async function getBookingsForDate(date, parking = 'P6') {
     const selectedDate = String(date || '').trim();
     if (!selectedDate) return [];
+    const selectedParking = normalizeParking(parking);
 
     const { data, error } = await getClient()
       .from(BOOKINGS_TABLE)
       .select('*')
-      .eq('parking', 'P6')
+      .eq('parking', selectedParking)
       .or(`from_date.eq.${selectedDate},to_date.eq.${selectedDate}`)
       .order('from_time', { ascending: true });
 
@@ -118,10 +131,11 @@
     return (data || []).map(fromDbRow);
   }
 
-  async function getSummary() {
+  async function getSummary(parking = 'P6') {
+    const selectedParking = normalizeParking(parking);
     const supabaseClient = getClient();
     const [countResult, latestResult, importsCountResult] = await Promise.all([
-      supabaseClient.from(BOOKINGS_TABLE).select('*', { count: 'exact', head: true }).eq('parking', 'P6'),
+      supabaseClient.from(BOOKINGS_TABLE).select('*', { count: 'exact', head: true }).eq('parking', selectedParking),
       supabaseClient.from(IMPORTS_TABLE).select('*').order('imported_at', { ascending: false }).limit(1).maybeSingle(),
       supabaseClient.from(IMPORTS_TABLE).select('*', { count: 'exact', head: true }),
     ]);

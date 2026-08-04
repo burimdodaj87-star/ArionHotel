@@ -1,25 +1,24 @@
-# P6 Tagesliste – Supabase-Version
+# Gemeinsame P5/P6-Tageslisten
 
-Die Daten werden jetzt online in Supabase gespeichert. Dadurch sehen beide Arbeitsgeräte dieselben Buchungen und dieselben Check-In-/Check-Out-Häkchen.
+Dies ist eine Erweiterung der bestehenden P6-Plattform. Es wird kein neues Repository benötigt.
 
-## Einmalige Einrichtung
+- `dashboard.html`: P6-Tagesliste
+- `p5.html`: P5-Tagesliste
+- `index.html`: gemeinsamer CSV-Upload für P5 und P6
 
-1. In Supabase **SQL Editor** öffnen.
-2. Den vollständigen Inhalt von `supabase.sql` ausführen.
-3. In Supabase unter **Project Settings → API** kopieren:
-   - Project URL
-   - Publishable key oder anon public key
-4. Beide Werte in `supabase-config.js` eintragen.
-5. Alle Dateien dieses Ordners in das GitHub-Repository hochladen und gleichnamige Dateien ersetzen.
-6. Danach die CSV über `index.html` erneut hochladen.
+## Einmalige Aktualisierung
+
+1. `supabase-p5-update.sql` im Supabase SQL Editor ausführen.
+2. Die Webdateien im bestehenden GitHub-Repository hochladen und ersetzen.
+3. `supabase-config.js` nicht ersetzen.
+4. CSV einmal erneut hochladen, weil die frühere Version P5 nicht gespeichert hat.
 
 ## Regeln
 
-- In Supabase werden nur Zeilen mit `Parking = P6` gespeichert. P1 bis P5 werden ignoriert.
-- Status `CANCEL...` wird in der Tagesliste nicht angezeigt.
-- Dubletten werden anhand `E-Mail + Telefonnummer + kompletter to-Wert` erkannt.
-- Neu hochgeladene Daten aktualisieren eine bereits vorhandene Buchung mit derselben Kombination.
-- Enthält Referral/Refferal `HOTEL_IMPORT`, wird `Arion Kunde` angezeigt; sonst `Panda Kunde`.
-- Check-In- und Check-Out-Häkchen werden online in Supabase gespeichert.
-
-Wichtig: In `supabase-config.js` nur den Publishable-/anon-Key verwenden, niemals den `service_role`-Key.
+- Gespeichert werden nur P5 und P6. P1 bis P4 werden ignoriert.
+- CANCEL-Buchungen werden nicht angezeigt.
+- Dubletten: E-Mail + Telefon + kompletter `to`-Wert.
+- P5 + `HOTEL_IMPORT` enthalten: **Life Hotel Kunde**.
+- P6 + `HOTEL_IMPORT` enthalten: **Arion Kunde**.
+- Sonst: **Panda Kunde**.
+- Häkchen werden für beide Ansichten online in Supabase gespeichert.

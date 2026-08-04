@@ -5,7 +5,8 @@
   const dropZone = document.getElementById('dropZone');
   const fileChip = document.getElementById('fileChip');
   const importButton = document.getElementById('importButton');
-  const dashboardButton = document.getElementById('dashboardButton');
+  const p5Button = document.getElementById('p5DashboardButton');
+  const p6Button = document.getElementById('p6DashboardButton');
   const notice = document.getElementById('notice');
   let selectedFile = null;
 
@@ -29,9 +30,14 @@
       .replaceAll("'", '&#039;');
   }
 
+  function setDashboardButtonsVisible(visible) {
+    p5Button.hidden = !visible;
+    p6Button.hidden = !visible;
+  }
+
   function selectFile(file) {
     notice.className = 'notice';
-    dashboardButton.hidden = true;
+    setDashboardButtonsVisible(false);
 
     if (!file) return;
     if (!file.name.toLowerCase().endsWith('.csv')) {
@@ -51,7 +57,7 @@
   async function importSelectedFile() {
     if (!selectedFile) return;
     importButton.disabled = true;
-    importButton.textContent = 'P6-Daten werden online gespeichert …';
+    importButton.textContent = 'P5- und P6-Daten werden gespeichert …';
     notice.className = 'notice';
 
     try {
@@ -60,40 +66,38 @@
       const parsed = window.P6CSV.parseCsv(text);
       const allIncomingRows = window.P6CSV.normalizeRows(parsed);
 
-      // Nur P6 wird nach Supabase übertragen. P1 bis P5 werden vollständig ignoriert.
-      // Stornierte P6-Buchungen werden gespeichert, damit ein späterer CANCEL-Status
-      // eine zuvor aktive Buchung online aktualisiert und aus der Tagesliste entfernt.
-      const p6Rows = allIncomingRows.filter((row) => String(row.parking || '').trim().toUpperCase() === 'P6');
-      const uniqueP6Rows = window.P6CSV.mergeRows([], p6Rows).rows;
+      // Auf dieser Plattform werden ausschließlich P5 und P6 gespeichert.
+      const supportedRows = allIncomingRows.filter((row) => ['P5', 'P6'].includes(String(row.parking || '').trim().toUpperCase()));
+      const uniqueRows = window.P6CSV.mergeRows([], supportedRows).rows;
+      const p5Count = uniqueRows.filter((row) => row.parking === 'P5').length;
+      const p6Count = uniqueRows.filter((row) => row.parking === 'P6').length;
 
-      if (uniqueP6Rows.length === 0) {
-        throw new Error('In dieser CSV-Datei wurden keine Buchungen mit Parking = P6 gefunden.');
+      if (uniqueRows.length === 0) {
+        throw new Error('In dieser CSV-Datei wurden keine Buchungen mit Parking = P5 oder P6 gefunden.');
       }
 
-      await window.P6DB.upsertBookings(uniqueP6Rows, selectedFile.name);
+      await window.P6DB.upsertBookings(uniqueRows, selectedFile.name);
       await window.P6DB.addImport({
         fileName: selectedFile.name,
         fingerprint: window.P6CSV.hashString(text),
         csvRows: allIncomingRows.length,
-        p6Rows: uniqueP6Rows.length,
+        p5Rows: p5Count,
+        p6Rows: p6Count,
       });
 
-      const summary = await window.P6DB.getSummary();
-      const today = window.P6CSV.localToday();
-      const todayRows = await window.P6DB.getBookingsForDate(today);
-      const activeToday = todayRows.filter(window.P6CSV.isP6Active);
-      const todayCheckIns = activeToday.filter((row) => row.fromDate === today).length;
-      const todayCheckOuts = activeToday.filter((row) => row.toDate === today).length;
+      const [p5Summary, p6Summary] = await Promise.all([
+        window.P6DB.getSummary('P5'),
+        window.P6DB.getSummary('P6'),
+      ]);
 
       showNotice(
         `<strong>CSV erfolgreich online gespeichert.</strong><br>` +
         `${allIncomingRows.length.toLocaleString('de-AT')} CSV-Zeilen gelesen. ` +
-        `${uniqueP6Rows.length.toLocaleString('de-AT')} eindeutige P6-Buchungen wurden hinzugefügt oder aktualisiert. ` +
-        `In Supabase sind jetzt ${summary.totalRows.toLocaleString('de-AT')} P6-Buchungen gespeichert. ` +
-        `Für heute: ${todayCheckIns} Check-Ins und ${todayCheckOuts} Check-Outs.`,
+        `${p5Count.toLocaleString('de-AT')} P5- und ${p6Count.toLocaleString('de-AT')} P6-Buchungen wurden hinzugefügt oder aktualisiert.<br>` +
+        `Online gespeichert: ${p5Summary.totalRows.toLocaleString('de-AT')} P5-Buchungen und ${p6Summary.totalRows.toLocaleString('de-AT')} P6-Buchungen.`,
         'success'
       );
-      dashboardButton.hidden = false;
+      setDashboardButtonsVisible(true);
     } catch (error) {
       console.error(error);
       showNotice(`<strong>Import nicht möglich.</strong><br>${escapeHtml(error.message || 'Unbekannter Fehler')}`, 'error');

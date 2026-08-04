@@ -63,11 +63,10 @@
     const headers = rows[0].map((header) => String(header).trim());
     const normalizedHeaders = headers.map(normalizeHeader);
     const records = rows.slice(1).map((cells, rowIndex) => {
-      const record = { __rowNumber: rowIndex + 2 };
+      const record = { __rowNumber: rowIndex + 2, __normalized: {} };
       headers.forEach((header, index) => {
         record[header] = cells[index] ?? '';
       });
-      record.__normalized = {};
       normalizedHeaders.forEach((header, index) => {
         record.__normalized[header] = cells[index] ?? '';
       });
@@ -198,7 +197,7 @@
         toDate: to.date,
         toTime: to.time,
         status: get('status'),
-        parking: get('parking'),
+        parking: get('parking').toUpperCase(),
         referral: get('referral'),
         sourceRow: record.__rowNumber,
       };
@@ -207,11 +206,6 @@
     });
   }
 
-  /**
-   * Vorhandene Buchungen bleiben erhalten, neue werden ergänzt.
-   * Bei gleicher Kombination aus E-Mail + Telefon + to ersetzt die neuere
-   * CSV-Zeile die vorhandene Zeile, damit Status/Preis aktuell bleiben.
-   */
   function mergeRows(existingRows, incomingRows) {
     const merged = new Map();
     const legacyByPhoneAndTo = new Map();
@@ -234,7 +228,6 @@
         }
         merged.set(identity, row);
       } else {
-        // Übergang für Daten, die mit der früheren Version ohne E-Mail gespeichert wurden.
         const legacy = legacyIdentity(row);
         const storageKey = `legacy:${legacy}:${row.key || hashString(JSON.stringify(row))}`;
         merged.set(storageKey, row);
@@ -256,7 +249,6 @@
         continue;
       }
 
-      // Einmalige Migration: alte gespeicherte Zeile ohne E-Mail anhand Telefon + to ersetzen.
       const legacy = legacyIdentity(incoming);
       const legacyCandidates = legacyByPhoneAndTo.get(legacy) || [];
       const legacyKey = legacyCandidates.find((candidate) => merged.has(candidate));
@@ -275,27 +267,29 @@
       added += 1;
     }
 
-    return {
-      rows: Array.from(merged.values()),
-      added,
-      updated,
-      duplicates,
-    };
+    return { rows: Array.from(merged.values()), added, updated, duplicates };
+  }
+
+  function normalizeParking(value) {
+    return String(value ?? '').trim().toUpperCase();
+  }
+
+  function isActiveForParking(row, parking) {
+    const rowParking = normalizeParking(row?.parking);
+    const wantedParking = normalizeParking(parking);
+    const status = String(row?.status ?? '').trim().toUpperCase();
+    return rowParking === wantedParking && !status.startsWith('CANCEL');
   }
 
   function isP6Active(row) {
-    const parking = String(row.parking ?? '').trim().toUpperCase();
-    const status = String(row.status ?? '').trim().toUpperCase();
-    return parking === 'P6' && !status.startsWith('CANCEL');
+    return isActiveForParking(row, 'P6');
   }
 
   function containsHotelImport(value) {
     return String(value ?? '').toUpperCase().includes('HOTEL_IMPORT');
   }
 
-  function customerType(row) {
-    // Entscheidend ist nicht eine exakte Übereinstimmung. Sobald der Inhalt
-    // HOTEL_IMPORT enthält – z. B. HOTEL_IMPORT:805b225... – ist es ein Arion-Kunde.
+  function hasHotelImport(row) {
     const knownReferralValues = [
       row?.referral,
       row?.refferal,
@@ -305,20 +299,23 @@
       row?.Referrer,
     ];
 
-    if (knownReferralValues.some(containsHotelImport)) return 'Arion Kunde';
+    if (knownReferralValues.some(containsHotelImport)) return true;
 
-    // Zusätzliche Absicherung für ältere gespeicherte Datensätze oder abweichende
-    // Schreibweisen des Spaltennamens: alle Referral-/Refferal-Felder durchsuchen.
     if (row && typeof row === 'object') {
       for (const [key, value] of Object.entries(row)) {
         const normalizedKey = normalizeHeader(key);
         if (['referral', 'refferal', 'referrer'].includes(normalizedKey) && containsHotelImport(value)) {
-          return 'Arion Kunde';
+          return true;
         }
       }
     }
 
-    return 'Panda Kunde';
+    return false;
+  }
+
+  function customerType(row, parking = row?.parking) {
+    if (!hasHotelImport(row)) return 'Panda Kunde';
+    return normalizeParking(parking) === 'P5' ? 'Life Hotel Kunde' : 'Arion Kunde';
   }
 
   function localToday() {
@@ -345,6 +342,8 @@
     customerType,
     decodeCsv,
     hashString,
+    hasHotelImport,
+    isActiveForParking,
     isP6Active,
     localToday,
     mergeRows,
