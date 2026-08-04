@@ -4,34 +4,42 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>P6 Tagesliste</title>
-  <link rel="stylesheet" href="styles.css?v=20260804-6">
+  <link rel="stylesheet" href="styles.css?v=20260804-4">
 </head>
 <body data-parking="P6" data-hotel-label="Arion Kunde">
-  <header class="topbar">
+  <header class="topbar topbar-white partner-header">
     <div class="topbar-inner">
-      <div class="brand"><span class="brand-mark">P6</span><span>P6 Tagesliste</span></div>
+      <div class="partner-brand" aria-label="Arion Airport Hotel und Panda Parken">
+        <img class="partner-logo arion-logo" src="arion-logo.svg?v=2" alt="Arion Airport Hotel">
+        <span class="logo-divider" aria-hidden="true"></span>
+        <img class="partner-logo panda-logo" src="panda-logo.svg?v=2" alt="Panda Parken">
+        <span class="parking-pill">P6</span>
+      </div>
       <nav class="top-nav" aria-label="Ansichten">
         <a class="nav-link" href="p5.html">P5</a>
         <a class="nav-link active" href="dashboard.html" aria-current="page">P6</a>
-        <a class="nav-link nav-upload" href="index.html">CSV</a>
+        <a class="nav-link" href="index.html">CSV</a>
       </nav>
     </div>
   </header>
 
   <main class="page">
-    <div id="loadingState" class="card loading-state">Online-Daten werden geladen …</div>
+    <div id="loadingState" class="card loading-state">P6-Online-Daten werden geladen …</div>
 
     <section id="noDataState" class="card no-data-state" hidden>
-      <h2>Noch keine P6-Buchungen vorhanden</h2>
-      <p>Lade die CSV auf der gemeinsamen Upload-Seite erneut hoch.</p>
+      <h2>Noch keine P6-Buchungen in Supabase</h2>
+      <p>Öffne CSV und lade die gemeinsame Datei hoch.</p>
       <a class="btn btn-primary" href="index.html">CSV hochladen</a>
     </section>
 
     <div id="dashboardContent" hidden>
       <section class="dashboard-head">
         <div>
-          <p class="eyebrow">Nur Parkplatz P6</p>
+          <p class="eyebrow">NUR PARKPLATZ P6</p>
           <h1>Tagesliste</h1>
           <div id="datasetMeta" class="dataset-meta"></div>
         </div>
@@ -71,14 +79,14 @@
         </article>
       </section>
 
-      <p class="footer-note">Nur P6. Status CANCEL wird ausgeblendet. Enthält Refferal/Referral den Text HOTEL_IMPORT – auch als HOTEL_IMPORT:… – wird „Arion Kunde“ angezeigt, sonst „Panda Kunde“.</p>
+      <p class="footer-note">Nur P6. CANCEL wird ausgeblendet. Enthält Refferal/Referral irgendwo den Text HOTEL_IMPORT – auch als HOTEL_IMPORT:… – wird „Arion Kunde“ angezeigt, sonst „Panda Kunde“.</p>
     </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js?v=20260804-4"></script>
-  <script src="csv.js?v=20260804-6"></script>
-  <script src="db.js?v=20260804-6"></script>
-  <script src="dashboard.js?v=20260804-6"></script>
+  <script src="supabase-config.js"></script>
+  <script src="csv.js?v=20260804-4"></script>
+  <script src="db.js?v=20260804-4"></script>
+  <script src="dashboard.js?v=20260804-4"></script>
 </body>
 </html>

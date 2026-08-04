@@ -1,11 +1,9 @@
 (() => {
   'use strict';
 
-  // Der bestehende Tabellenname bleibt erhalten, damit keine P6-Daten migriert werden müssen.
-  // Die Tabelle speichert ab dieser Version P5 und P6.
   const BOOKINGS_TABLE = 'p6_bookings';
   const IMPORTS_TABLE = 'p6_imports';
-  const UPSERT_CHUNK_SIZE = 300;
+  const UPSERT_CHUNK_SIZE = 200;
   let client = null;
 
   function normalizeParking(value) {
@@ -18,16 +16,15 @@
 
   function getClient() {
     if (client) return client;
-
     const config = window.P6_SUPABASE || {};
     const url = String(config.url || '').trim();
     const anonKey = String(config.anonKey || '').trim();
 
-    if (!url || url.includes('HIER_SUPABASE') || !anonKey || anonKey.includes('HIER_SUPABASE')) {
-      throw new Error('Supabase ist noch nicht eingerichtet. Trage Project URL und Publishable Key in supabase-config.js ein.');
+    if (!url || !anonKey || url.includes('HIER_SUPABASE') || anonKey.includes('HIER_SUPABASE')) {
+      throw new Error('Supabase ist nicht eingerichtet. Project URL und Publishable Key fehlen in supabase-config.js.');
     }
     if (!window.supabase?.createClient) {
-      throw new Error('Die Supabase-Bibliothek konnte nicht geladen werden.');
+      throw new Error('Die Supabase-Bibliothek konnte nicht geladen werden. Internetverbindung prüfen.');
     }
 
     client = window.supabase.createClient(url, anonKey, {
@@ -41,7 +38,6 @@
   }
 
   function toDbRow(row, sourceFile) {
-    const parking = normalizeParking(row.parking);
     return {
       dedupe_key: window.P6CSV.bookingIdentity(row),
       booking_id: String(row.id || ''),
@@ -56,7 +52,7 @@
       to_date: row.toDate || null,
       to_time: String(row.toTime || ''),
       booking_status: String(row.status || ''),
-      parking,
+      parking: normalizeParking(row.parking),
       referral: String(row.referral || ''),
       source_row: Number.isFinite(Number(row.sourceRow)) ? Number(row.sourceRow) : null,
       source_file: String(sourceFile || ''),
@@ -79,7 +75,7 @@
       toDate: row.to_date || '',
       toTime: String(row.to_time || ''),
       status: String(row.booking_status || ''),
-      parking: String(row.parking || ''),
+      parking: String(row.parking || '').toUpperCase(),
       referral: String(row.referral || ''),
       sourceRow: row.source_row,
       checkInCompleted: row.check_in_completed === true,
@@ -95,24 +91,39 @@
       const chunk = dbRows.slice(start, start + UPSERT_CHUNK_SIZE);
       const { error } = await supabaseClient
         .from(BOOKINGS_TABLE)
-        .upsert(chunk, { onConflict: 'dedupe_key', ignoreDuplicates: false, defaultToNull: false });
-      if (error) throw new Error(`Supabase-Import fehlgeschlagen: ${error.message}`);
-    }
+        .upsert(chunk, {
+          onConflict: 'dedupe_key',
+          ignoreDuplicates: false,
+          defaultToNull: false,
+        });
 
+      if (error) {
+        const hint = /row-level security|policy/i.test(error.message || '')
+          ? ' Führe die Datei supabase-p5-p6-final.sql einmal im Supabase SQL Editor aus.'
+          : '';
+        throw new Error(`Supabase-Import fehlgeschlagen: ${error.message}.${hint}`);
+      }
+    }
     return dbRows.length;
   }
 
+  // Das Importprotokoll darf niemals verhindern, dass erfolgreich gespeicherte Buchungen angezeigt werden.
   async function addImport({ fileName, fingerprint, csvRows, p5Rows, p6Rows }) {
-    const { error } = await getClient()
-      .from(IMPORTS_TABLE)
-      .insert({
-        file_name: String(fileName || ''),
-        fingerprint: String(fingerprint || ''),
-        csv_rows: Number(csvRows || 0),
-        p5_rows: Number(p5Rows || 0),
-        p6_rows: Number(p6Rows || 0),
-      });
-    if (error) throw new Error(`Import-Protokoll konnte nicht gespeichert werden: ${error.message}`);
+    const payload = {
+      file_name: String(fileName || ''),
+      fingerprint: String(fingerprint || ''),
+      csv_rows: Number(csvRows || 0),
+      p5_rows: Number(p5Rows || 0),
+      p6_rows: Number(p6Rows || 0),
+    };
+
+    let result = await getClient().from(IMPORTS_TABLE).insert(payload);
+    if (result.error && /p5_rows/i.test(result.error.message || '')) {
+      const fallback = { ...payload };
+      delete fallback.p5_rows;
+      result = await getClient().from(IMPORTS_TABLE).insert(fallback);
+    }
+    return { warning: result.error ? result.error.message : '' };
   }
 
   async function getBookingsForDate(date, parking = 'P6') {
@@ -131,6 +142,16 @@
     return (data || []).map(fromDbRow);
   }
 
+  async function countBookings(parking) {
+    const selectedParking = normalizeParking(parking);
+    const { count, error } = await getClient()
+      .from(BOOKINGS_TABLE)
+      .select('*', { count: 'exact', head: true })
+      .eq('parking', selectedParking);
+    if (error) throw new Error(`${selectedParking}-Anzahl konnte nicht geladen werden: ${error.message}`);
+    return count || 0;
+  }
+
   async function getSummary(parking = 'P6') {
     const selectedParking = normalizeParking(parking);
     const supabaseClient = getClient();
@@ -141,13 +162,11 @@
     ]);
 
     if (countResult.error) throw new Error(`Buchungsanzahl konnte nicht geladen werden: ${countResult.error.message}`);
-    if (latestResult.error) throw new Error(`Letzter Import konnte nicht geladen werden: ${latestResult.error.message}`);
-    if (importsCountResult.error) throw new Error(`Importanzahl konnte nicht geladen werden: ${importsCountResult.error.message}`);
-
+    // Falls das alte Importprotokoll nicht lesbar ist, funktionieren die Tageslisten trotzdem.
     return {
       totalRows: countResult.count || 0,
-      importCount: importsCountResult.count || 0,
-      latestImport: latestResult.data || null,
+      importCount: importsCountResult.error ? 0 : (importsCountResult.count || 0),
+      latestImport: latestResult.error ? null : (latestResult.data || null),
     };
   }
 
@@ -157,12 +176,12 @@
       .from(BOOKINGS_TABLE)
       .update({ [field]: Boolean(completed), updated_at: new Date().toISOString() })
       .eq('dedupe_key', dedupeKey);
-
     if (error) throw new Error(`Status konnte nicht gespeichert werden: ${error.message}`);
   }
 
   window.P6DB = {
     addImport,
+    countBookings,
     getBookingsForDate,
     getSummary,
     updateCompleted,

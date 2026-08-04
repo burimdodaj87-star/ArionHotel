@@ -1,0 +1,26 @@
+1. In Supabase den kompletten Inhalt von 1_SUPABASE_SQL_AUSFUEHREN.sql ausführen.
+
+2. In GitHub ALLE folgenden Dateien hochladen und gleichnamige Dateien ersetzen:
+   index.html
+   p5.html
+   dashboard.html
+   styles.css
+   csv.js
+   db.js
+   upload.js
+   dashboard.js
+   lifehotel-logo.svg
+   arion-logo.svg
+   panda-logo.svg
+   .nojekyll
+
+3. supabase-config.js NICHT löschen und NICHT ersetzen. Dort stehen bereits deine Supabase-Daten.
+
+4. GitHub Pages abwarten, dann die Webseite mit Strg + F5 öffnen.
+
+5. Die gemeinsame CSV einmal hochladen.
+   Die grüne Erfolgsmeldung muss danach ausdrücklich anzeigen:
+   - Anzahl P5
+   - Anzahl P6
+
+6. P5 öffnen. Die Buchungen aus Parking = P5 müssen jetzt erscheinen.

@@ -16,11 +16,6 @@
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  function showNotice(message, type) {
-    notice.className = `notice visible ${type}`;
-    notice.innerHTML = message;
-  }
-
   function escapeHtml(value) {
     return String(value ?? '')
       .replaceAll('&', '&amp;')
@@ -30,24 +25,20 @@
       .replaceAll("'", '&#039;');
   }
 
-  function setDashboardButtonsVisible(visible) {
-    p5Button.hidden = !visible;
-    p6Button.hidden = !visible;
+  function showNotice(message, type) {
+    notice.className = `notice visible ${type}`;
+    notice.innerHTML = message;
   }
 
   function selectFile(file) {
     notice.className = 'notice';
-    setDashboardButtonsVisible(false);
-
     if (!file) return;
     if (!file.name.toLowerCase().endsWith('.csv')) {
       selectedFile = null;
       importButton.disabled = true;
-      fileChip.className = 'file-chip';
-      showNotice('Bitte eine Datei mit der Endung <strong>.csv</strong> auswählen.', 'error');
+      showNotice('Bitte eine CSV-Datei auswählen.', 'error');
       return;
     }
-
     selectedFile = file;
     importButton.disabled = false;
     fileChip.className = 'file-chip visible';
@@ -57,47 +48,55 @@
   async function importSelectedFile() {
     if (!selectedFile) return;
     importButton.disabled = true;
-    importButton.textContent = 'P5- und P6-Daten werden gespeichert …';
+    importButton.textContent = 'P5 und P6 werden online gespeichert …';
     notice.className = 'notice';
 
     try {
       const buffer = await selectedFile.arrayBuffer();
       const text = window.P6CSV.decodeCsv(buffer);
       const parsed = window.P6CSV.parseCsv(text);
-      const allIncomingRows = window.P6CSV.normalizeRows(parsed);
-
-      // Auf dieser Plattform werden ausschließlich P5 und P6 gespeichert.
-      const supportedRows = allIncomingRows.filter((row) => ['P5', 'P6'].includes(String(row.parking || '').trim().toUpperCase()));
-      const uniqueRows = window.P6CSV.mergeRows([], supportedRows).rows;
+      const allRows = window.P6CSV.normalizeRows(parsed);
+      const p5Raw = allRows.filter((row) => String(row.parking || '').trim().toUpperCase() === 'P5');
+      const p6Raw = allRows.filter((row) => String(row.parking || '').trim().toUpperCase() === 'P6');
+      const uniqueRows = window.P6CSV.mergeRows([], [...p5Raw, ...p6Raw]).rows;
       const p5Count = uniqueRows.filter((row) => row.parking === 'P5').length;
       const p6Count = uniqueRows.filter((row) => row.parking === 'P6').length;
 
-      if (uniqueRows.length === 0) {
-        throw new Error('In dieser CSV-Datei wurden keine Buchungen mit Parking = P5 oder P6 gefunden.');
+      if (!uniqueRows.length) {
+        throw new Error('In der CSV wurden keine P5- oder P6-Buchungen gefunden.');
       }
 
       await window.P6DB.upsertBookings(uniqueRows, selectedFile.name);
-      await window.P6DB.addImport({
+      const importResult = await window.P6DB.addImport({
         fileName: selectedFile.name,
         fingerprint: window.P6CSV.hashString(text),
-        csvRows: allIncomingRows.length,
+        csvRows: allRows.length,
         p5Rows: p5Count,
         p6Rows: p6Count,
       });
 
-      const [p5Summary, p6Summary] = await Promise.all([
-        window.P6DB.getSummary('P5'),
-        window.P6DB.getSummary('P6'),
+      const [onlineP5, onlineP6] = await Promise.all([
+        window.P6DB.countBookings('P5'),
+        window.P6DB.countBookings('P6'),
       ]);
 
+      if (p5Count > 0 && onlineP5 === 0) {
+        throw new Error('Die CSV enthält P5, aber Supabase erlaubt P5 noch nicht. Führe supabase-p5-p6-final.sql im SQL Editor aus.');
+      }
+
+      const warning = importResult.warning
+        ? `<br><small>Hinweis zum Importprotokoll: ${escapeHtml(importResult.warning)}</small>`
+        : '';
+
       showNotice(
-        `<strong>CSV erfolgreich online gespeichert.</strong><br>` +
-        `${allIncomingRows.length.toLocaleString('de-AT')} CSV-Zeilen gelesen. ` +
-        `${p5Count.toLocaleString('de-AT')} P5- und ${p6Count.toLocaleString('de-AT')} P6-Buchungen wurden hinzugefügt oder aktualisiert.<br>` +
-        `Online gespeichert: ${p5Summary.totalRows.toLocaleString('de-AT')} P5-Buchungen und ${p6Summary.totalRows.toLocaleString('de-AT')} P6-Buchungen.`,
+        `<strong>Fertig – P5 und P6 sind online.</strong><br>` +
+        `${allRows.length.toLocaleString('de-AT')} CSV-Zeilen gelesen.<br>` +
+        `<strong>${p5Count.toLocaleString('de-AT')} P5</strong> und <strong>${p6Count.toLocaleString('de-AT')} P6</strong> aus dieser Datei verarbeitet.<br>` +
+        `In Supabase: <strong>${onlineP5.toLocaleString('de-AT')} P5</strong> und <strong>${onlineP6.toLocaleString('de-AT')} P6</strong>.${warning}`,
         'success'
       );
-      setDashboardButtonsVisible(true);
+      p5Button.hidden = false;
+      p6Button.hidden = false;
     } catch (error) {
       console.error(error);
       showNotice(`<strong>Import nicht möglich.</strong><br>${escapeHtml(error.message || 'Unbekannter Fehler')}`, 'error');

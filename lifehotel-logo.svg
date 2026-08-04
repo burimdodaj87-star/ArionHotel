@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 150" role="img" aria-labelledby="title desc">
+  <title id="title">Life Hotel Vienna Airport</title>
+  <desc id="desc">Grünes Life Hotel Logo</desc>
+  <rect width="430" height="150" rx="18" fill="#ffffff"/>
+  <path d="M63 99c-25 0-44-16-44-37 0-20 18-36 41-37 8-16 28-26 50-26 25 0 47 13 53 32 5-2 11-3 17-3 22 0 40 15 40 34 0 20-19 37-43 37H63z" fill="#f7fbf3" stroke="#c8d9b7" stroke-width="3"/>
+  <text x="35" y="79" fill="#6c8d45" font-size="48" font-family="Segoe Script, Brush Script MT, cursive" font-style="italic">Life Hotel</text>
+  <text x="83" y="109" fill="#688058" font-size="14" font-family="Arial, Helvetica, sans-serif" letter-spacing="5">VIENNA AIRPORT</text>
+</svg>
