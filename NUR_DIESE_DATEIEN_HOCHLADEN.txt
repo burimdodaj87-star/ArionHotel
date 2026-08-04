@@ -1,0 +1,13 @@
+Für das Logo-Update in GitHub ersetzen/hochladen:
+
+1. p5.html
+2. dashboard.html
+3. styles.css
+4. life-hotel-logo.png
+5. arion-hotel-logo.png
+6. panda-parken-logo.png
+
+Die drei PNG-Dateien sind die vom Nutzer hochgeladenen Originaldateien.
+Keine SVG-Dateien verwenden.
+supabase-config.js NICHT ersetzen.
+Kein SQL erneut ausführen.

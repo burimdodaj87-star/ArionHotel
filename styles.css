@@ -781,13 +781,14 @@ h2 { margin-bottom: 4px; }
   object-position: left center;
 }
 
-.life-logo { height: 70px; max-width: 260px; }
-.arion-logo { height: 62px; max-width: 235px; }
-.panda-logo { height: 62px; max-width: 230px; }
+.original-logo { background: transparent; }
+.life-logo { height: 72px; max-width: 300px; }
+.arion-logo { height: 74px; max-width: 320px; }
+.panda-logo { height: 78px; max-width: 120px; }
 
 .logo-divider {
   width: 1px;
-  height: 52px;
+  height: 58px;
   background: #d8e0e5;
   flex: 0 0 auto;
 }
@@ -805,8 +806,12 @@ h2 { margin-bottom: 4px; }
 }
 
 .partner-header .parking-pill {
-  margin-left: 2px;
+  margin-left: 8px;
   min-width: 48px;
+}
+
+.partner-brand .partner-logo {
+  flex: 0 0 auto;
 }
 
 /* P5 und P6 Hotelstatus farblich unterscheiden */
@@ -824,10 +829,10 @@ body[data-parking="P6"] .customer-status.hotel {
 
 @media (max-width: 900px) {
   .partner-brand { gap: 9px; }
-  .life-logo { height: 58px; max-width: 205px; }
-  .arion-logo { height: 54px; max-width: 190px; }
-  .panda-logo { height: 52px; max-width: 180px; }
-  .logo-divider { height: 44px; }
+  .life-logo { height: 58px; max-width: 240px; }
+  .arion-logo { height: 60px; max-width: 250px; }
+  .panda-logo { height: 62px; max-width: 92px; }
+  .logo-divider { height: 46px; }
 }
 
 @media (max-width: 720px) {
@@ -850,9 +855,9 @@ body[data-parking="P6"] .customer-status.hotel {
     gap: 5px;
   }
 
-  .life-logo { height: 45px; max-width: 133px; }
-  .arion-logo { height: 42px; max-width: 130px; }
-  .panda-logo { height: 40px; max-width: 125px; }
+  .life-logo { height: 44px; max-width: 170px; }
+  .arion-logo { height: 46px; max-width: 175px; }
+  .panda-logo { height: 46px; max-width: 70px; }
   .logo-divider { height: 34px; }
 
   .partner-header .parking-pill {
@@ -890,15 +895,100 @@ body[data-parking="P6"] .customer-status.hotel {
     justify-content: center;
   }
 
-  .life-logo { height: 44px; max-width: 140px; }
-  .arion-logo { height: 42px; max-width: 135px; }
-  .panda-logo { height: 40px; max-width: 130px; }
+  .life-logo { height: 42px; max-width: 155px; }
+  .arion-logo { height: 44px; max-width: 160px; }
+  .panda-logo { height: 44px; max-width: 66px; }
 }
 
 @media (max-width: 370px) {
-  .life-logo { height: 38px; max-width: 112px; }
-  .arion-logo { height: 37px; max-width: 108px; }
+  .life-logo { height: 36px; max-width: 132px; }
+  .arion-logo { height: 38px; max-width: 136px; }
+  .panda-logo { height: 38px; max-width: 58px; }
   .panda-logo { height: 36px; max-width: 105px; }
   .logo-divider { height: 30px; }
   .partner-header .parking-pill { display: none; }
+}
+
+/* ===== Original hochgeladene Logos – unverändert als PNG ===== */
+.partner-header {
+  background: #fff;
+}
+
+.partner-header .partner-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.partner-header .partner-logo {
+  display: block;
+  flex: 0 0 auto;
+  object-fit: contain;
+  object-position: center;
+  background: #fff;
+}
+
+/* Life-Hotel- und Arion-Dateien werden in ihrem Original-Seitenverhältnis angezeigt. */
+.partner-header .life-logo {
+  width: 250px;
+  height: auto;
+  max-height: 86px;
+  max-width: 29vw;
+}
+
+.partner-header .arion-logo {
+  width: 230px;
+  height: auto;
+  max-height: 86px;
+  max-width: 27vw;
+}
+
+/* Das neu hochgeladene Panda-Logo ist quadratisch und wird als klares Icon gezeigt. */
+.partner-header .panda-logo {
+  width: 78px;
+  height: 78px;
+  max-width: none;
+  border-radius: 10px;
+}
+
+.partner-header .logo-divider {
+  width: 1px;
+  height: 62px;
+  background: #d8e0e5;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 900px) {
+  .partner-header .life-logo { width: 205px; max-width: 27vw; }
+  .partner-header .arion-logo { width: 190px; max-width: 25vw; }
+  .partner-header .panda-logo { width: 64px; height: 64px; }
+  .partner-header .logo-divider { height: 50px; }
+}
+
+@media (max-width: 720px) {
+  .partner-header .partner-brand { gap: 8px; }
+  .partner-header .life-logo { width: 160px; max-width: 43vw; }
+  .partner-header .arion-logo { width: 145px; max-width: 40vw; }
+  .partner-header .panda-logo { width: 48px; height: 48px; border-radius: 7px; }
+  .partner-header .logo-divider { height: 38px; }
+}
+
+@media (max-width: 520px) {
+  .partner-header .topbar-inner {
+    grid-template-columns: 1fr;
+  }
+  .partner-header .partner-brand {
+    justify-content: center;
+  }
+  .partner-header .life-logo { width: 154px; max-width: 57vw; }
+  .partner-header .arion-logo { width: 140px; max-width: 53vw; }
+  .partner-header .panda-logo { width: 46px; height: 46px; }
+}
+
+@media (max-width: 370px) {
+  .partner-header .life-logo { width: 132px; }
+  .partner-header .arion-logo { width: 122px; }
+  .partner-header .panda-logo { width: 40px; height: 40px; }
+  .partner-header .logo-divider { height: 32px; }
 }
