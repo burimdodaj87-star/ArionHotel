@@ -1,0 +1,20 @@
+DIESE DATEIEN IN GITHUB HOCHLADEN / ERSETZEN
+
+p5.html
+dashboard.html
+index.html
+styles.css
+dashboard.js
+db.js
+csv.js
+upload.js
+life-hotel-logo.png
+arion-hotel-logo.png
+panda-parken-logo.png
+.nojekyll
+
+NICHT ERSETZEN:
+supabase-config.js
+
+NUR IN SUPABASE AUSFÜHREN, NICHT ZWINGEND IN GITHUB HOCHLADEN:
+1_SUPABASE_HOTELTRANSFERS_AUSFUEHREN.sql

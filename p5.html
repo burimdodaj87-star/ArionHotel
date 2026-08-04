@@ -2,43 +2,44 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>P5 Tagesliste</title>
-  <link rel="stylesheet" href="styles.css?v=20260804-original3">
+  <link rel="stylesheet" href="styles.css?v=20260804-transfer1">
 </head>
 <body data-parking="P5" data-hotel-label="Life Hotel Kunde">
   <header class="topbar topbar-white partner-header">
     <div class="topbar-inner">
-      <div class="partner-brand" aria-label="Life Hotel und Panda Parken">
-        <img class="partner-logo life-logo original-logo" src="life-hotel-logo.png?v=20260804-original3" alt="Life Hotel Vienna Airport">
+      <div class="partner-brand" aria-label="Life Hotel Vienna Airport und Panda Parken">
+        <img class="partner-logo life-logo" src="life-hotel-logo.png?v=20260804-transfer1" alt="Life Hotel Vienna Airport">
         <span class="logo-divider" aria-hidden="true"></span>
-        <img class="partner-logo panda-logo original-logo" src="panda-parken-logo.png?v=20260804-original3" alt="Panda Parken">
+        <img class="partner-logo panda-logo" src="panda-parken-logo.png?v=20260804-transfer1" alt="Panda Parken">
         <span class="parking-pill">P5</span>
       </div>
-      <nav class="top-nav" aria-label="Ansichten">
-        <a class="nav-link active" href="p5.html" aria-current="page">P5</a>
-        <a class="nav-link" href="dashboard.html">P6</a>
-        <a class="nav-link" href="index.html">CSV</a>
-      </nav>
+
+      <div class="header-tools">
+        <button id="openTransferModal" class="header-transfer-btn" type="button">
+          <span class="header-transfer-plus" aria-hidden="true">+</span>
+          <span>Transfer für Hotelgäste</span>
+        </button>
+        <nav class="top-nav" aria-label="Ansichten">
+          <a class="nav-link active" href="p5.html" aria-current="page">P5</a>
+          <a class="nav-link" href="dashboard.html">P6</a>
+          <a class="nav-link" href="index.html">CSV</a>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <main class="page">
+  <main class="page dashboard-page">
     <div id="loadingState" class="card loading-state">P5-Online-Daten werden geladen …</div>
-
-    <section id="noDataState" class="card no-data-state" hidden>
-      <h2>Noch keine P5-Buchungen in Supabase</h2>
-      <p>Öffne CSV, lade die gemeinsame Datei hoch und prüfe, dass die Erfolgsmeldung auch eine P5-Anzahl anzeigt.</p>
-      <a class="btn btn-primary" href="index.html">CSV hochladen</a>
-    </section>
 
     <div id="dashboardContent" hidden>
       <section class="dashboard-head">
-        <div>
+        <div class="dashboard-title-block">
           <p class="eyebrow">NUR PARKPLATZ P5</p>
           <h1>Tagesliste</h1>
           <div id="datasetMeta" class="dataset-meta"></div>
@@ -51,42 +52,98 @@
 
       <section class="summary-grid" aria-label="Tagesübersicht">
         <div class="summary-card"><span>Check-Ins</span><strong id="checkInTotal">0</strong></div>
+        <div class="summary-card transfer-summary"><span>Hoteltransfers</span><strong id="transferTotal">0</strong></div>
         <div class="summary-card"><span>Check-Outs</span><strong id="checkOutTotal">0</strong></div>
-        <div class="summary-card"><span>Erledigt</span><strong id="completedTotal">0 / 0</strong></div>
+        <div class="summary-card completed-summary"><span>Erledigt</span><strong id="completedTotal">0 / 0</strong></div>
       </section>
 
-      <section class="lists-grid">
-        <article class="card list-card">
-          <header class="list-head">
-            <div class="list-title-wrap">
-              <div class="list-icon">IN</div>
-              <div><h2>Check-In</h2><span class="dataset-meta">Datum aus Spalte „from“</span></div>
+      <section class="operations-grid" aria-label="Arbeitslisten">
+        <article class="card operation-lane checkin-lane">
+          <header class="lane-head">
+            <div class="lane-title-wrap">
+              <div class="lane-icon">IN</div>
+              <div><h2>Check-In</h2><span>Aus CSV · Datum „from“</span></div>
             </div>
             <span id="checkInBadge" class="count-badge">0</span>
           </header>
-          <div id="checkInContainer"></div>
+          <div id="checkInContainer" class="operation-list"></div>
         </article>
 
-        <article class="card list-card">
-          <header class="list-head">
-            <div class="list-title-wrap">
-              <div class="list-icon">OUT</div>
-              <div><h2>Check-Out</h2><span class="dataset-meta">Datum aus Spalte „to“</span></div>
+        <article class="card operation-lane transfer-lane">
+          <header class="lane-head">
+            <div class="lane-title-wrap">
+              <div class="lane-icon transfer-icon">↗</div>
+              <div><h2>Transfer Hotelgäste</h2><span>Manuell eingetragen</span></div>
+            </div>
+            <span id="transferBadge" class="count-badge transfer-badge">0</span>
+          </header>
+          <div id="transferContainer" class="operation-list"></div>
+        </article>
+
+        <article class="card operation-lane checkout-lane">
+          <header class="lane-head">
+            <div class="lane-title-wrap">
+              <div class="lane-icon">OUT</div>
+              <div><h2>Check-Out</h2><span>Aus CSV · Datum „to“</span></div>
             </div>
             <span id="checkOutBadge" class="count-badge">0</span>
           </header>
-          <div id="checkOutContainer"></div>
+          <div id="checkOutContainer" class="operation-list"></div>
         </article>
       </section>
 
-      <p class="footer-note">Nur P5. CANCEL wird ausgeblendet. Enthält Refferal/Referral irgendwo den Text HOTEL_IMPORT – auch als HOTEL_IMPORT:… – wird „Life Hotel Kunde“ angezeigt, sonst „Panda Kunde“.</p>
+      <p class="footer-note">Check-In und Check-Out kommen aus der CSV. Hoteltransfers werden über „Transfer für Hotelgäste“ manuell eingetragen und online für P5 gespeichert.</p>
     </div>
   </main>
 
+  <div id="transferModal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-transfer></div>
+    <section class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="transferModalTitle">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">P5 · LIFE HOTEL</p>
+          <h2 id="transferModalTitle">Hoteltransfer eintragen</h2>
+        </div>
+        <button class="modal-close" type="button" data-close-transfer aria-label="Fenster schließen">×</button>
+      </header>
+
+      <form id="transferForm" class="transfer-form">
+        <label class="form-field form-field-wide">
+          <span>Name</span>
+          <input id="transferName" name="name" type="text" maxlength="120" autocomplete="name" placeholder="Name des Hotelgastes" required>
+        </label>
+
+        <label class="form-field">
+          <span>Personenanzahl</span>
+          <input id="transferPersons" name="persons" type="number" min="1" max="99" inputmode="numeric" value="1" required>
+        </label>
+
+        <label class="form-field">
+          <span>Transferdatum</span>
+          <input id="transferDate" name="date" type="date" required>
+        </label>
+
+        <label class="form-field">
+          <span>Transferzeit</span>
+          <input id="transferTime" name="time" type="time" required>
+        </label>
+
+        <div id="transferFormError" class="form-error form-field-wide" role="alert" hidden></div>
+
+        <div class="modal-actions form-field-wide">
+          <button class="btn btn-secondary" type="button" data-close-transfer>Abbrechen</button>
+          <button id="saveTransferButton" class="btn btn-primary" type="submit">Eintragen</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="csv.js?v=20260804-4"></script>
-  <script src="db.js?v=20260804-4"></script>
-  <script src="dashboard.js?v=20260804-4"></script>
+  <script src="csv.js?v=20260804-transfer1"></script>
+  <script src="db.js?v=20260804-transfer1"></script>
+  <script src="dashboard.js?v=20260804-transfer1"></script>
 </body>
 </html>

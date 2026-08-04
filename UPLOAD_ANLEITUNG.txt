@@ -1,26 +1,15 @@
-1. In Supabase den kompletten Inhalt von 1_SUPABASE_SQL_AUSFUEHREN.sql ausführen.
+P5/P6 HOTELTRANSFERS – INSTALLATION
 
-2. In GitHub ALLE folgenden Dateien hochladen und gleichnamige Dateien ersetzen:
-   index.html
-   p5.html
-   dashboard.html
-   styles.css
-   csv.js
-   db.js
-   upload.js
-   dashboard.js
-   lifehotel-logo.svg
-   arion-logo.svg
-   panda-logo.svg
-   .nojekyll
+1. Supabase öffnen → SQL Editor → New query.
+2. Datei 1_SUPABASE_HOTELTRANSFERS_AUSFUEHREN.sql vollständig kopieren und Run drücken.
+3. Danach alle Dateien dieses Ordners in dasselbe GitHub-Repository hochladen und gleichnamige Dateien ersetzen.
+4. supabase-config.js NICHT ersetzen oder löschen. Diese Datei bleibt mit deiner Project URL und dem Publishable Key bestehen.
+5. GitHub Pages abwarten und die Webseite mit Strg + F5 neu laden.
 
-3. supabase-config.js NICHT löschen und NICHT ersetzen. Dort stehen bereits deine Supabase-Daten.
-
-4. GitHub Pages abwarten, dann die Webseite mit Strg + F5 öffnen.
-
-5. Die gemeinsame CSV einmal hochladen.
-   Die grüne Erfolgsmeldung muss danach ausdrücklich anzeigen:
-   - Anzahl P5
-   - Anzahl P6
-
-6. P5 öffnen. Die Buchungen aus Parking = P5 müssen jetzt erscheinen.
+Neue Funktion:
+- Header-Schaltfläche „+ Transfer für Hotelgäste“
+- Eingabe: Name, Personenanzahl, Transferdatum, Transferzeit
+- P5-Einträge bleiben in P5, P6-Einträge bleiben in P6
+- Tagesansicht: Check-In → Transfer Hotelgäste → Check-Out
+- Häkchen werden online in Supabase gespeichert
+- Optimiert für Desktop und Handy
