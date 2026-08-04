@@ -1,38 +1,25 @@
-# P6 Tagesliste
+# P6 Tagesliste – Supabase-Version
 
-Statische Website mit zwei Seiten:
+Die Daten werden jetzt online in Supabase gespeichert. Dadurch sehen beide Arbeitsgeräte dieselben Buchungen und dieselben Check-In-/Check-Out-Häkchen.
 
-- `index.html`: CSV-Datei hochladen
-- `dashboard.html`: Check-In- und Check-Out-Liste für das gewählte Datum
+## Einmalige Einrichtung
 
-## Logik
+1. In Supabase **SQL Editor** öffnen.
+2. Den vollständigen Inhalt von `supabase.sql` ausführen.
+3. In Supabase unter **Project Settings → API** kopieren:
+   - Project URL
+   - Publishable key oder anon public key
+4. Beide Werte in `supabase-config.js` eintragen.
+5. Alle Dateien dieses Ordners in das GitHub-Repository hochladen und gleichnamige Dateien ersetzen.
+6. Danach die CSV über `index.html` erneut hochladen.
 
-- Es werden nur Zeilen mit `Parking = P6` berücksichtigt.
-- Zeilen mit Status `CANCEL` werden nicht angezeigt.
-- Check-In: Datum aus der Spalte `from` entspricht dem ausgewählten Datum.
-- Check-Out: Datum aus der Spalte `to` entspricht dem ausgewählten Datum.
-- Das Datumsfeld steht beim Öffnen der Seite immer auf dem heutigen Datum.
-- Innerhalb jeder Liste wird nach Uhrzeit sortiert.
-- Name, Telefonnummer und Preis werden direkt aus `Name`, `Phone` und `Pricing` übernommen.
-- Die Häkchen werden lokal im Browser gespeichert.
-- Enthält `Refferal`/`Referral` den Text `HOTEL_IMPORT`, wird **Arion Kunde** angezeigt; sonst **Panda Kunde**.
-- Die CSV-Daten werden nur im Browser verarbeitet und nicht an einen Server gesendet.
+## Regeln
 
-## GitHub Pages
+- In Supabase werden nur Zeilen mit `Parking = P6` gespeichert. P1 bis P5 werden ignoriert.
+- Status `CANCEL...` wird in der Tagesliste nicht angezeigt.
+- Dubletten werden anhand `E-Mail + Telefonnummer + kompletter to-Wert` erkannt.
+- Neu hochgeladene Daten aktualisieren eine bereits vorhandene Buchung mit derselben Kombination.
+- Enthält Referral/Refferal `HOTEL_IMPORT`, wird `Arion Kunde` angezeigt; sonst `Panda Kunde`.
+- Check-In- und Check-Out-Häkchen werden online in Supabase gespeichert.
 
-1. Alle Dateien dieses Ordners in ein GitHub-Repository hochladen.
-2. In GitHub unter **Settings → Pages** als Quelle den Branch `main` und den Ordner `/root` auswählen.
-3. Die veröffentlichte URL öffnen. `index.html` ist die Upload-Seite.
-
-Beide Seiten müssen unter derselben GitHub-Pages-Adresse liegen, damit sie auf dieselben lokal gespeicherten CSV-Daten zugreifen können.
-
-
-## Update auf die Kundentyp-Version
-
-Nach dem Hochladen dieser Version die CSV-Datei einmal erneut über `index.html` importieren. Bereits gespeicherte Buchungen bleiben bestehen und werden anhand E-Mail + Telefon + `to` aktualisiert.
-
-
-## Kundenstatus
-
-- Enthält `Refferal` oder `Referral` irgendwo den Text `HOTEL_IMPORT` (zum Beispiel `HOTEL_IMPORT:805b225...`), wird **Arion Kunde** angezeigt.
-- Andernfalls wird **Panda Kunde** angezeigt.
+Wichtig: In `supabase-config.js` nur den Publishable-/anon-Key verwenden, niemals den `service_role`-Key.

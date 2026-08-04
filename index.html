@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>P6 CSV hochladen</title>
-  <link rel="stylesheet" href="styles.css?v=20260804-3">
+  <link rel="stylesheet" href="styles.css?v=20260804-4">
 </head>
 <body>
   <header class="topbar">
@@ -19,7 +19,7 @@
     <section class="hero">
       <p class="eyebrow">CSV-Import</p>
       <h1>Buchungsdatei hochladen</h1>
-      <p class="lead">Lade die CSV-Datei aus dem Parking Admin hoch. Die Tagesliste filtert danach automatisch P6-Buchungen, trennt Check-In und Check-Out und blendet stornierte Buchungen aus.</p>
+      <p class="lead">Lade die CSV-Datei aus dem Parking Admin hoch. Ausschließlich P6-Buchungen werden online in Supabase gespeichert. P1 bis P5 werden ignoriert.</p>
     </section>
 
     <section class="card upload-card">
@@ -33,17 +33,19 @@
       <div id="fileChip" class="file-chip" aria-live="polite"></div>
 
       <div class="actions">
-        <button id="importButton" class="btn btn-primary" type="button" disabled>Daten übernehmen</button>
+        <button id="importButton" class="btn btn-primary" type="button" disabled>Daten hinzufügen</button>
         <a id="dashboardButton" class="btn btn-secondary" href="dashboard.html" hidden>Tagesliste öffnen</a>
       </div>
 
       <div id="notice" class="notice" aria-live="polite"></div>
-      <p class="privacy-note">Die CSV-Datei bleibt in diesem Browser. Es werden keine Buchungsdaten an einen Server übertragen.</p>
+      <p class="privacy-note">Die P6-Buchungen werden online in Supabase gespeichert und sind dadurch auf beiden Arbeitsgeräten identisch.</p>
     </section>
   </main>
 
-  <script src="csv.js?v=20260804-3"></script>
-  <script src="db.js?v=20260804-3"></script>
-  <script src="upload.js?v=20260804-3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js?v=20260804-4"></script>
+  <script src="csv.js?v=20260804-4"></script>
+  <script src="db.js?v=20260804-4"></script>
+  <script src="upload.js?v=20260804-4"></script>
 </body>
 </html>

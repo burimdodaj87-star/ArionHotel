@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>P6 Tagesliste</title>
-  <link rel="stylesheet" href="styles.css?v=20260804-3">
+  <link rel="stylesheet" href="styles.css?v=20260804-4">
 </head>
 <body>
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand"><span class="brand-mark">P6</span><span>P6 Tagesliste</span></div>
-      <a class="nav-link" href="index.html">Neue CSV hochladen</a>
+      <a class="nav-link" href="index.html">Weitere CSV hinzufügen</a>
     </div>
   </header>
 
   <main class="page">
-    <div id="loadingState" class="card loading-state">Daten werden geladen …</div>
+    <div id="loadingState" class="card loading-state">Online-Daten werden geladen …</div>
 
     <section id="noDataState" class="card no-data-state" hidden>
-      <h2>Noch keine CSV-Datei vorhanden</h2>
+      <h2>Noch keine P6-Buchungen vorhanden</h2>
       <p>Öffne zuerst die Upload-Seite und lade die Buchungsdatei hoch.</p>
       <a class="btn btn-primary" href="index.html">CSV hochladen</a>
     </section>
@@ -67,12 +67,14 @@
         </article>
       </section>
 
-      <p class="footer-note">Es werden ausschließlich Buchungen mit Parking = P6 angezeigt. Status CANCEL wird nicht angezeigt. Enthält Refferal/Referral den Text HOTEL_IMPORT – auch als HOTEL_IMPORT:… – wird „Arion Kunde“ angezeigt, sonst „Panda Kunde“.</p>
+      <p class="footer-note">Es werden ausschließlich P6-Buchungen angezeigt. Status CANCEL wird ausgeblendet. Enthält Refferal/Referral den Text HOTEL_IMPORT – auch als HOTEL_IMPORT:… – wird „Arion Kunde“ angezeigt, sonst „Panda Kunde“. Die Häkchen werden ebenfalls online gespeichert.</p>
     </div>
   </main>
 
-  <script src="csv.js?v=20260804-3"></script>
-  <script src="db.js?v=20260804-3"></script>
-  <script src="dashboard.js?v=20260804-3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js?v=20260804-4"></script>
+  <script src="csv.js?v=20260804-4"></script>
+  <script src="db.js?v=20260804-4"></script>
+  <script src="dashboard.js?v=20260804-4"></script>
 </body>
 </html>

@@ -1,7 +1,6 @@
 (() => {
   'use strict';
 
-  const CHECK_STATE_KEY = 'p6-tagesliste-check-state-v1';
   const loadingState = document.getElementById('loadingState');
   const noDataState = document.getElementById('noDataState');
   const dashboardContent = document.getElementById('dashboardContent');
@@ -15,36 +14,17 @@
   const checkInBadge = document.getElementById('checkInBadge');
   const checkOutBadge = document.getElementById('checkOutBadge');
 
-  let rows = [];
   let currentCheckIns = [];
   let currentCheckOuts = [];
-  let checkState = loadCheckState();
-
-  function loadCheckState() {
-    try {
-      return JSON.parse(localStorage.getItem(CHECK_STATE_KEY) || '{}');
-    } catch (_error) {
-      return {};
-    }
-  }
-
-  function saveCheckState() {
-    localStorage.setItem(CHECK_STATE_KEY, JSON.stringify(checkState));
-  }
-
-  function stateKey(direction, row) {
-    return `${direction}:${row.key}`;
-  }
+  let renderSequence = 0;
 
   function isCompleted(direction, row) {
-    return checkState[stateKey(direction, row)] === true;
+    return direction === 'checkin' ? row.checkInCompleted === true : row.checkOutCompleted === true;
   }
 
-  function setCompleted(direction, row, value) {
-    const key = stateKey(direction, row);
-    if (value) checkState[key] = true;
-    else delete checkState[key];
-    saveCheckState();
+  function setCompletedLocal(direction, row, value) {
+    if (direction === 'checkin') row.checkInCompleted = value;
+    else row.checkOutCompleted = value;
   }
 
   function escapeHtml(value) {
@@ -103,7 +83,7 @@
       const customerTypeClass = customerType === 'Arion Kunde' ? 'arion' : 'panda';
 
       return `
-        <tr class="${completed ? 'completed' : ''}" data-row-key="${row.key}">
+        <tr class="${completed ? 'completed' : ''}" data-row-key="${escapeHtml(row.key)}">
           <td class="time-cell">${escapeHtml(row[timeField] || '—')}</td>
           <td class="customer-name">${escapeHtml(row.name || 'Ohne Name')}</td>
           <td>${phoneHtml}</td>
@@ -111,7 +91,7 @@
           <td><span class="customer-status ${customerTypeClass}">${customerType}</span></td>
           <td>
             <label class="check-wrap">
-              <input type="checkbox" data-direction="${direction}" data-key="${row.key}" ${completed ? 'checked' : ''}>
+              <input type="checkbox" data-direction="${direction}" data-key="${escapeHtml(row.key)}" ${completed ? 'checked' : ''}>
               <span>${actionLabel}</span>
             </label>
           </td>
@@ -140,23 +120,36 @@
     checkOutBadge.textContent = String(currentCheckOuts.length);
   }
 
-  function render() {
+  async function render() {
+    const sequence = ++renderSequence;
     const selectedDate = datePicker.value;
-    const activeRows = rows.filter(window.P6CSV.isP6Active);
+    checkInContainer.innerHTML = '<div class="empty-state">Daten werden geladen …</div>';
+    checkOutContainer.innerHTML = '<div class="empty-state">Daten werden geladen …</div>';
 
-    currentCheckIns = activeRows
-      .filter((row) => row.fromDate === selectedDate)
-      .sort((a, b) => sortByTime(a, b, 'fromTime'));
-    currentCheckOuts = activeRows
-      .filter((row) => row.toDate === selectedDate)
-      .sort((a, b) => sortByTime(a, b, 'toTime'));
+    try {
+      const rows = await window.P6DB.getBookingsForDate(selectedDate);
+      if (sequence !== renderSequence) return;
 
-    checkInContainer.innerHTML = makeTable(currentCheckIns, 'checkin');
-    checkOutContainer.innerHTML = makeTable(currentCheckOuts, 'checkout');
-    updateSummary();
+      const activeRows = rows.filter(window.P6CSV.isP6Active);
+      currentCheckIns = activeRows
+        .filter((row) => row.fromDate === selectedDate)
+        .sort((a, b) => sortByTime(a, b, 'fromTime'));
+      currentCheckOuts = activeRows
+        .filter((row) => row.toDate === selectedDate)
+        .sort((a, b) => sortByTime(a, b, 'toTime'));
+
+      checkInContainer.innerHTML = makeTable(currentCheckIns, 'checkin');
+      checkOutContainer.innerHTML = makeTable(currentCheckOuts, 'checkout');
+      updateSummary();
+    } catch (error) {
+      console.error(error);
+      const message = escapeHtml(error.message || 'Daten konnten nicht geladen werden.');
+      checkInContainer.innerHTML = `<div class="empty-state">${message}</div>`;
+      checkOutContainer.innerHTML = `<div class="empty-state">${message}</div>`;
+    }
   }
 
-  function handleCheckboxChange(event) {
+  async function handleCheckboxChange(event) {
     const checkbox = event.target.closest('input[type="checkbox"][data-direction][data-key]');
     if (!checkbox) return;
 
@@ -165,43 +158,52 @@
     const row = list.find((item) => item.key === checkbox.dataset.key);
     if (!row) return;
 
-    setCompleted(direction, row, checkbox.checked);
-    checkbox.closest('tr')?.classList.toggle('completed', checkbox.checked);
+    const previousValue = isCompleted(direction, row);
+    const newValue = checkbox.checked;
+    checkbox.disabled = true;
+    setCompletedLocal(direction, row, newValue);
+    checkbox.closest('tr')?.classList.toggle('completed', newValue);
     updateSummary();
+
+    try {
+      await window.P6DB.updateCompleted(row.key, direction, newValue);
+    } catch (error) {
+      console.error(error);
+      setCompletedLocal(direction, row, previousValue);
+      checkbox.checked = previousValue;
+      checkbox.closest('tr')?.classList.toggle('completed', previousValue);
+      updateSummary();
+      window.alert(error.message || 'Status konnte nicht gespeichert werden.');
+    } finally {
+      checkbox.disabled = false;
+    }
   }
 
   async function init() {
     datePicker.value = window.P6CSV.localToday();
 
     try {
-      const dataset = await window.P6DB.getDataset();
+      const summary = await window.P6DB.getSummary();
       loadingState.hidden = true;
 
-      if (!dataset || !Array.isArray(dataset.rows)) {
+      if (!summary.totalRows) {
         noDataState.hidden = false;
         return;
       }
 
-      rows = dataset.rows;
-      const rowsWithReferralField = rows.filter((row) =>
-        Object.prototype.hasOwnProperty.call(row, 'referral') ||
-        Object.prototype.hasOwnProperty.call(row, 'refferal') ||
-        Object.prototype.hasOwnProperty.call(row, 'Refferal') ||
-        Object.prototype.hasOwnProperty.call(row, 'Referral')
-      ).length;
-      const needsReferralRefresh = Number(dataset.dataVersion || 0) < 3 || rowsWithReferralField === 0;
-      const importCount = Number(dataset.importCount || 1);
-      const importLabel = importCount === 1 ? '1 CSV-Import' : `${importCount.toLocaleString('de-AT')} CSV-Importe`;
-      const arionCount = rows.filter((row) => window.P6CSV.customerType(row) === 'Arion Kunde').length;
-      datasetMeta.textContent = `${importLabel} · zuletzt ${dataset.fileName || 'CSV-Datei'} am ${formatDateTime(dataset.importedAt)} · ${rows.length.toLocaleString('de-AT')} eindeutige Buchungen · ${arionCount.toLocaleString('de-AT')} Arion-Kunden`;
-      if (needsReferralRefresh) {
-        datasetMeta.innerHTML += ' · <strong class="data-warning">CSV bitte einmal neu importieren, damit Arion/Panda korrekt erkannt wird.</strong>';
-      }
+      const importLabel = summary.importCount === 1
+        ? '1 CSV-Import'
+        : `${summary.importCount.toLocaleString('de-AT')} CSV-Importe`;
+      const latest = summary.latestImport;
+      datasetMeta.textContent = latest
+        ? `${importLabel} · zuletzt ${latest.file_name} am ${formatDateTime(latest.imported_at)} · ${summary.totalRows.toLocaleString('de-AT')} P6-Buchungen online`
+        : `${summary.totalRows.toLocaleString('de-AT')} P6-Buchungen online`;
+
       dashboardContent.hidden = false;
-      render();
+      await render();
     } catch (error) {
       console.error(error);
-      loadingState.textContent = 'Die gespeicherten CSV-Daten konnten nicht geladen werden.';
+      loadingState.textContent = error.message || 'Die Online-Daten konnten nicht geladen werden.';
     }
   }
 
