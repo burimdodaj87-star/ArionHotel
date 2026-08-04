@@ -8,15 +8,15 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>P6 Tagesliste</title>
-  <link rel="stylesheet" href="styles.css?v=20260804-transfer1">
+  <link rel="stylesheet" href="styles.css?v=20260804-mobiletabs2">
 </head>
 <body data-parking="P6" data-hotel-label="Arion Kunde">
   <header class="topbar topbar-white partner-header">
     <div class="topbar-inner">
       <div class="partner-brand" aria-label="Arion Airport Hotel und Panda Parken">
-        <img class="partner-logo arion-logo" src="arion-hotel-logo.png?v=20260804-transfer1" alt="Arion Airport Hotel">
+        <img class="partner-logo arion-logo" src="arion-hotel-logo.png?v=20260804-mobiletabs2" alt="Arion Airport Hotel">
         <span class="logo-divider" aria-hidden="true"></span>
-        <img class="partner-logo panda-logo" src="panda-parken-logo.png?v=20260804-transfer1" alt="Panda Parken">
+        <img class="partner-logo panda-logo" src="panda-parken-logo.png?v=20260804-mobiletabs2" alt="Panda Parken">
         <span class="parking-pill">P6</span>
       </div>
 
@@ -57,8 +57,29 @@
         <div class="summary-card completed-summary"><span>Erledigt</span><strong id="completedTotal">0 / 0</strong></div>
       </section>
 
+      <section class="mobile-workspace" aria-label="Arbeitsansicht auswählen">
+        <div class="mobile-lane-tabs" role="tablist" aria-label="Check-In, Hoteltransfers oder Check-Out anzeigen">
+          <button class="mobile-lane-tab active" type="button" role="tab" aria-selected="true" data-lane-target="checkin">
+            <span>Check-In</span>
+            <strong id="mobileCheckInTotal">0</strong>
+          </button>
+          <button class="mobile-lane-tab transfer-tab" type="button" role="tab" aria-selected="false" data-lane-target="transfer">
+            <span>Transfer</span>
+            <strong id="mobileTransferTotal">0</strong>
+          </button>
+          <button class="mobile-lane-tab checkout-tab" type="button" role="tab" aria-selected="false" data-lane-target="checkout">
+            <span>Check-Out</span>
+            <strong id="mobileCheckOutTotal">0</strong>
+          </button>
+        </div>
+        <div class="mobile-progress" aria-live="polite">
+          <span>Erledigt</span>
+          <strong id="mobileCompletedTotal">0 / 0</strong>
+        </div>
+      </section>
+
       <section class="operations-grid" aria-label="Arbeitslisten">
-        <article class="card operation-lane checkin-lane">
+        <article class="card operation-lane checkin-lane mobile-active" data-lane="checkin">
           <header class="lane-head">
             <div class="lane-title-wrap">
               <div class="lane-icon">IN</div>
@@ -69,7 +90,7 @@
           <div id="checkInContainer" class="operation-list"></div>
         </article>
 
-        <article class="card operation-lane transfer-lane">
+        <article class="card operation-lane transfer-lane" data-lane="transfer">
           <header class="lane-head">
             <div class="lane-title-wrap">
               <div class="lane-icon transfer-icon">↗</div>
@@ -80,7 +101,7 @@
           <div id="transferContainer" class="operation-list"></div>
         </article>
 
-        <article class="card operation-lane checkout-lane">
+        <article class="card operation-lane checkout-lane" data-lane="checkout">
           <header class="lane-head">
             <div class="lane-title-wrap">
               <div class="lane-icon">OUT</div>
@@ -142,8 +163,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="csv.js?v=20260804-transfer1"></script>
-  <script src="db.js?v=20260804-transfer1"></script>
-  <script src="dashboard.js?v=20260804-transfer1"></script>
+  <script src="csv.js?v=20260804-mobiletabs2"></script>
+  <script src="db.js?v=20260804-mobiletabs2"></script>
+  <script src="dashboard.js?v=20260804-mobiletabs2"></script>
 </body>
 </html>

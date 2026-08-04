@@ -20,6 +20,16 @@
   const checkOutTotal = document.getElementById('checkOutTotal');
   const completedTotal = document.getElementById('completedTotal');
 
+  const mobileLaneTabs = document.querySelector('.mobile-lane-tabs');
+  const mobileCheckInTotal = document.getElementById('mobileCheckInTotal');
+  const mobileTransferTotal = document.getElementById('mobileTransferTotal');
+  const mobileCheckOutTotal = document.getElementById('mobileCheckOutTotal');
+  const mobileCompletedTotal = document.getElementById('mobileCompletedTotal');
+  const laneElements = new Map(
+    Array.from(document.querySelectorAll('.operation-lane[data-lane]'))
+      .map((lane) => [lane.dataset.lane, lane]),
+  );
+
   const checkInBadge = document.getElementById('checkInBadge');
   const transferBadge = document.getElementById('transferBadge');
   const checkOutBadge = document.getElementById('checkOutBadge');
@@ -41,6 +51,40 @@
   let renderSequence = 0;
   let lastFocusedElement = null;
   let toastTimer = null;
+  let activeMobileLane = 'checkin';
+
+  function setActiveMobileLane(laneName, { focus = false } = {}) {
+    if (!laneElements.has(laneName)) return;
+
+    activeMobileLane = laneName;
+    try {
+      sessionStorage.setItem(`parking-active-lane-${pageConfig.parking}`, laneName);
+    } catch (error) {
+      // Die Ansicht funktioniert auch, wenn Session Storage blockiert ist.
+    }
+
+    laneElements.forEach((lane, name) => {
+      lane.classList.toggle('mobile-active', name === laneName);
+    });
+
+    mobileLaneTabs?.querySelectorAll('[data-lane-target]').forEach((button) => {
+      const isActive = button.dataset.laneTarget === laneName;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-selected', String(isActive));
+      button.tabIndex = isActive ? 0 : -1;
+      if (isActive && focus) button.focus();
+    });
+  }
+
+  function restoreMobileLane() {
+    let savedLane = 'checkin';
+    try {
+      savedLane = sessionStorage.getItem(`parking-active-lane-${pageConfig.parking}`) || 'checkin';
+    } catch (error) {
+      savedLane = 'checkin';
+    }
+    setActiveMobileLane(laneElements.has(savedLane) ? savedLane : 'checkin');
+  }
 
   function escapeHtml(value) {
     return String(value ?? '')
@@ -201,6 +245,11 @@
     checkInBadge.textContent = String(currentCheckIns.length);
     transferBadge.textContent = String(currentTransfers.length);
     checkOutBadge.textContent = String(currentCheckOuts.length);
+
+    if (mobileCheckInTotal) mobileCheckInTotal.textContent = String(currentCheckIns.length);
+    if (mobileTransferTotal) mobileTransferTotal.textContent = String(currentTransfers.length);
+    if (mobileCheckOutTotal) mobileCheckOutTotal.textContent = String(currentCheckOuts.length);
+    if (mobileCompletedTotal) mobileCompletedTotal.textContent = `${completed} / ${total}`;
   }
 
   function setLoadingLists() {
@@ -396,6 +445,7 @@
       }
 
       await render();
+      setActiveMobileLane('transfer');
       showToast(`${payload.name.trim()} wurde für ${formatDate(payload.date)} um ${payload.time} Uhr eingetragen.`);
     } catch (error) {
       console.error(error);
@@ -409,6 +459,7 @@
 
   async function init() {
     datePicker.value = window.P6CSV.localToday();
+    restoreMobileLane();
 
     try {
       const summary = await window.P6DB.getSummary(pageConfig.parking);
@@ -436,6 +487,27 @@
       loadingState.textContent = error.message || 'Die Online-Daten konnten nicht geladen werden.';
     }
   }
+
+  mobileLaneTabs?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-lane-target]');
+    if (!button) return;
+    setActiveMobileLane(button.dataset.laneTarget);
+  });
+
+  mobileLaneTabs?.addEventListener('keydown', (event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const buttons = Array.from(mobileLaneTabs.querySelectorAll('[data-lane-target]'));
+    const currentIndex = buttons.findIndex((button) => button.dataset.laneTarget === activeMobileLane);
+    let nextIndex = currentIndex;
+
+    if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % buttons.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = buttons.length - 1;
+
+    event.preventDefault();
+    setActiveMobileLane(buttons[nextIndex].dataset.laneTarget, { focus: true });
+  });
 
   datePicker.addEventListener('change', render);
   checkInContainer.addEventListener('change', handleBookingCheckboxChange);
