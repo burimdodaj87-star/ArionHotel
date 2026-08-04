@@ -23,6 +23,7 @@ Statische Website mit zwei Seiten:
 - Das Datumsfeld steht beim Öffnen der Seite immer auf dem heutigen Datum.
 - Innerhalb jeder Liste wird nach Uhrzeit sortiert.
 - Name, Telefonnummer und Preis werden direkt aus `Name`, `Phone` und `Pricing` übernommen.
+- Kundenstatus: Enthält die Spalte `Refferal` oder `Referral` den Text `HOTEL_IMPORT`, wird `Arion Kunde` angezeigt. Andernfalls wird `Panda Kunde` angezeigt.
 - Die Häkchen werden lokal im Browser gespeichert.
 - Die CSV-Daten werden nur im Browser verarbeitet und nicht an einen Server gesendet.
 

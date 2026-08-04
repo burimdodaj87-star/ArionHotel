@@ -99,6 +99,8 @@
       const phoneHtml = phone
         ? (href ? `<a class="phone-link" href="${escapeHtml(href)}">${escapeHtml(phone)}</a>` : escapeHtml(phone))
         : '<span class="dataset-meta">Keine Nummer</span>';
+      const customerType = window.P6CSV.customerType(row);
+      const customerTypeClass = customerType === 'Arion Kunde' ? 'arion' : 'panda';
 
       return `
         <tr class="${completed ? 'completed' : ''}" data-row-key="${row.key}">
@@ -106,6 +108,7 @@
           <td class="customer-name">${escapeHtml(row.name || 'Ohne Name')}</td>
           <td>${phoneHtml}</td>
           <td class="price-cell">${displayPrice(row.pricing)}</td>
+          <td><span class="customer-status ${customerTypeClass}">${customerType}</span></td>
           <td>
             <label class="check-wrap">
               <input type="checkbox" data-direction="${direction}" data-key="${row.key}" ${completed ? 'checked' : ''}>
@@ -118,7 +121,7 @@
     return `
       <div class="table-scroll">
         <table class="booking-table">
-          <thead><tr><th>Uhrzeit</th><th>Name</th><th>Telefon</th><th>Betrag</th><th>Erledigt</th></tr></thead>
+          <thead><tr><th>Uhrzeit</th><th>Name</th><th>Telefon</th><th>Betrag</th><th>Status</th><th>Erledigt</th></tr></thead>
           <tbody>${body}</tbody>
         </table>
       </div>`;

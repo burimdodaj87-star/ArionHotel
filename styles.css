@@ -310,7 +310,7 @@ h2 { margin-bottom: 4px; }
 .booking-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 630px;
+  min-width: 760px;
 }
 
 .booking-table th,
@@ -337,6 +337,29 @@ h2 { margin-bottom: 4px; }
 .customer-name { font-weight: 800; }
 .phone-link { color: var(--brand-dark); font-weight: 700; text-decoration: none; white-space: nowrap; }
 .price-cell { font-weight: 850; white-space: nowrap; }
+
+.customer-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.customer-status.arion {
+  background: #fff2d9;
+  color: #8a5300;
+  border: 1px solid #f0d08e;
+}
+
+.customer-status.panda {
+  background: #e9f5fb;
+  color: var(--brand-dark);
+  border: 1px solid #b9dced;
+}
 
 .check-wrap {
   display: inline-flex;

@@ -154,6 +154,7 @@
       to: ['to', 'checkout', 'departure'],
       status: ['status'],
       parking: ['parking', 'parkplatz'],
+      referral: ['refferal', 'referral', 'referrer'],
     };
 
     const available = new Set(parsed.normalizedHeaders);
@@ -163,7 +164,7 @@
       resolved[key] = candidates.find((candidate) => available.has(candidate)) || '';
     });
 
-    const required = ['name', 'phone', 'email', 'pricing', 'from', 'to', 'status', 'parking'];
+    const required = ['name', 'phone', 'email', 'pricing', 'from', 'to', 'status', 'parking', 'referral'];
     const missing = required.filter((key) => !resolved[key]);
     if (missing.length > 0) {
       const labels = {
@@ -175,6 +176,7 @@
         to: 'to',
         status: 'Status',
         parking: 'Parking',
+        referral: 'Refferal/Referral',
       };
       throw new Error(`Diese Spalten fehlen: ${missing.map((key) => labels[key]).join(', ')}`);
     }
@@ -197,6 +199,7 @@
         toTime: to.time,
         status: get('status'),
         parking: get('parking'),
+        referral: get('referral'),
         sourceRow: record.__rowNumber,
       };
       row.key = hashString(bookingIdentity(row));
@@ -286,6 +289,11 @@
     return parking === 'P6' && !status.startsWith('CANCEL');
   }
 
+  function customerType(row) {
+    const referral = String(row?.referral ?? '').trim().toUpperCase();
+    return referral.includes('HOTEL_IMPORT') ? 'Arion Kunde' : 'Panda Kunde';
+  }
+
   function localToday() {
     const now = new Date();
     const year = now.getFullYear();
@@ -307,6 +315,7 @@
 
   window.P6CSV = {
     bookingIdentity,
+    customerType,
     decodeCsv,
     hashString,
     isP6Active,
