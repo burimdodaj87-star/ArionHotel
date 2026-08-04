@@ -1536,3 +1536,106 @@ body[data-parking="P6"] .customer-status.hotel {
     height: 37px;
   }
 }
+
+
+/* ---------- Mobile compact totals instead of title block ---------- */
+@media (max-width: 760px) {
+  .dashboard-title-block {
+    display: none;
+  }
+
+  .dashboard-head {
+    margin-bottom: 12px;
+  }
+
+  .mobile-workspace {
+    gap: 0;
+    margin-bottom: 12px;
+  }
+
+  .mobile-lane-tabs {
+    gap: 7px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .mobile-lane-tab {
+    min-height: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 5px;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background: #fff;
+    color: var(--text);
+    box-shadow: var(--shadow-soft);
+    text-align: left;
+  }
+
+  .mobile-lane-tab span {
+    width: 100%;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.15;
+  }
+
+  .mobile-lane-tab strong {
+    min-width: 0;
+    min-height: 0;
+    display: block;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 26px;
+    line-height: 1;
+  }
+
+  .mobile-lane-tab.active,
+  .mobile-lane-tab.transfer-tab.active,
+  .mobile-lane-tab.checkout-tab.active {
+    color: #fff;
+  }
+
+  .mobile-lane-tab.active span,
+  .mobile-lane-tab.transfer-tab.active span,
+  .mobile-lane-tab.checkout-tab.active span,
+  .mobile-lane-tab.active strong,
+  .mobile-lane-tab.transfer-tab.active strong,
+  .mobile-lane-tab.checkout-tab.active strong {
+    color: #fff;
+  }
+
+  .mobile-progress {
+    display: none;
+  }
+
+  .date-panel {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .mobile-lane-tabs {
+    gap: 5px;
+  }
+
+  .mobile-lane-tab {
+    min-height: 72px;
+    padding: 9px;
+  }
+
+  .mobile-lane-tab span {
+    font-size: 10px;
+  }
+
+  .mobile-lane-tab strong {
+    font-size: 23px;
+  }
+}

@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>P5 Tagesliste</title>
-  <link rel="stylesheet" href="styles.css?v=20260804-mobiletabs2">
+  <link rel="stylesheet" href="styles.css?v=20260804-mobilecounts3">
 </head>
 <body data-parking="P5" data-hotel-label="Life Hotel Kunde">
   <header class="topbar topbar-white partner-header">
@@ -38,6 +38,28 @@
     <div id="loadingState" class="card loading-state">P5-Online-Daten werden geladen …</div>
 
     <div id="dashboardContent" hidden>
+
+
+      <section class="mobile-workspace" aria-label="Arbeitsansicht auswählen">
+        <div class="mobile-lane-tabs" role="tablist" aria-label="Check-In, Hoteltransfers oder Check-Out anzeigen">
+          <button class="mobile-lane-tab active" type="button" role="tab" aria-selected="true" data-lane-target="checkin">
+            <span>Check-Ins</span>
+            <strong id="mobileCheckInTotal">0</strong>
+          </button>
+          <button class="mobile-lane-tab transfer-tab" type="button" role="tab" aria-selected="false" data-lane-target="transfer">
+            <span>Hoteltransfers</span>
+            <strong id="mobileTransferTotal">0</strong>
+          </button>
+          <button class="mobile-lane-tab checkout-tab" type="button" role="tab" aria-selected="false" data-lane-target="checkout">
+            <span>Check-Outs</span>
+            <strong id="mobileCheckOutTotal">0</strong>
+          </button>
+        </div>
+        <div class="mobile-progress" aria-live="polite">
+          <span>Erledigt</span>
+          <strong id="mobileCompletedTotal">0 / 0</strong>
+        </div>
+      </section>
       <section class="dashboard-head">
         <div class="dashboard-title-block">
           <p class="eyebrow">NUR PARKPLATZ P5</p>
@@ -55,27 +77,6 @@
         <div class="summary-card transfer-summary"><span>Hoteltransfers</span><strong id="transferTotal">0</strong></div>
         <div class="summary-card"><span>Check-Outs</span><strong id="checkOutTotal">0</strong></div>
         <div class="summary-card completed-summary"><span>Erledigt</span><strong id="completedTotal">0 / 0</strong></div>
-      </section>
-
-      <section class="mobile-workspace" aria-label="Arbeitsansicht auswählen">
-        <div class="mobile-lane-tabs" role="tablist" aria-label="Check-In, Hoteltransfers oder Check-Out anzeigen">
-          <button class="mobile-lane-tab active" type="button" role="tab" aria-selected="true" data-lane-target="checkin">
-            <span>Check-In</span>
-            <strong id="mobileCheckInTotal">0</strong>
-          </button>
-          <button class="mobile-lane-tab transfer-tab" type="button" role="tab" aria-selected="false" data-lane-target="transfer">
-            <span>Transfer</span>
-            <strong id="mobileTransferTotal">0</strong>
-          </button>
-          <button class="mobile-lane-tab checkout-tab" type="button" role="tab" aria-selected="false" data-lane-target="checkout">
-            <span>Check-Out</span>
-            <strong id="mobileCheckOutTotal">0</strong>
-          </button>
-        </div>
-        <div class="mobile-progress" aria-live="polite">
-          <span>Erledigt</span>
-          <strong id="mobileCompletedTotal">0 / 0</strong>
-        </div>
       </section>
 
       <section class="operations-grid" aria-label="Arbeitslisten">

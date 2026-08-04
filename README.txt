@@ -1,10 +1,9 @@
-In GitHub diese vier Dateien ersetzen:
-- dashboard.html
+MOBILE-KENNZAHLEN-UPDATE
+
+In GitHub nur diese Dateien ersetzen:
 - p5.html
-- dashboard.js
+- dashboard.html
 - styles.css
 
-Keine SQL-Datei ausführen.
-supabase-config.js nicht ersetzen.
-Kein neuer CSV-Upload nötig.
-Danach GitHub Pages abwarten und die Seite am Handy vollständig neu laden.
+Keine SQL-Aenderung. CSV nicht erneut hochladen. supabase-config.js nicht ersetzen.
+Danach GitHub Pages abwarten und die Seite am Handy vollstaendig neu laden.
