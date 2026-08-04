@@ -3,6 +3,6 @@
 // Der Publishable-/anon-Key darf bei einer Browser-App hier stehen.
 // NIEMALS den service_role-Key eintragen.
 window.P6_SUPABASE = {
-  url: 'HIER_SUPABASE_PROJECT_URL_EINTRAGEN',
-  anonKey: 'HIER_SUPABASE_PUBLISHABLE_ODER_ANON_KEY_EINTRAGEN',
+  url: 'https://lubnxogsjrunfvawxqrw.supabase.co',
+  anonKey: 'sb_publishable_Ue27ufjqKmxGnCqLpnDtIA_D1p7oJUB',
 };
