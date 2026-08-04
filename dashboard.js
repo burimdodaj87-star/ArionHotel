@@ -234,6 +234,7 @@
         transferAlert.hidden = true;
         document.body.classList.remove('transfer-due-active');
         document.querySelector('[data-lane-target="transfer"]')?.classList.remove('urgent');
+        window.ParkingTransferAlarm?.setDueTransfers([], pageConfig.parking);
         return;
       }
 
@@ -244,6 +245,7 @@
       transferAlert.hidden = false;
       document.body.classList.add('transfer-due-active');
       document.querySelector('[data-lane-target="transfer"]')?.classList.add('urgent');
+      window.ParkingTransferAlarm?.setDueTransfers(due, pageConfig.parking);
     } catch (error) {
       console.error('Transferwarnung konnte nicht aktualisiert werden:', error);
     }
