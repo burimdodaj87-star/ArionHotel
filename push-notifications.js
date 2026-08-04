@@ -15,6 +15,8 @@
   let dueActive = false;
   let alarmInterval = null;
   let lastDueSignature = '';
+  let acknowledgedDueSignature = '';
+  const acknowledgedStorageKey = `parking-transfer-alarm-ack-${parking}`;
 
   function isIos() {
     return /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -178,18 +180,44 @@
     setDueTransfers(transfers = [], sourceParking = parking) {
       if (String(sourceParking || '').toUpperCase() !== parking) return;
       const openDue = Array.isArray(transfers) ? transfers.filter((item) => item && item.completed !== true) : [];
+      const nextSignature = openDue.map((item) => `${item.id || ''}:${item.date || ''}:${item.time || ''}`).join('|');
       dueActive = openDue.length > 0;
-      lastDueSignature = openDue.map((item) => `${item.id || ''}:${item.date || ''}:${item.time || ''}`).join('|');
 
       if (!dueActive) {
+        lastDueSignature = '';
+        acknowledgedDueSignature = '';
+        try { localStorage.removeItem(acknowledgedStorageKey); } catch (_error) {}
+        stopAlarmLoop();
+        return;
+      }
+
+      if (nextSignature !== lastDueSignature) {
+        let storedAcknowledgement = '';
+        try { storedAcknowledgement = localStorage.getItem(acknowledgedStorageKey) || ''; } catch (_error) {}
+        acknowledgedDueSignature = storedAcknowledgement === nextSignature ? storedAcknowledgement : '';
+        if (!acknowledgedDueSignature) {
+          try { localStorage.removeItem(acknowledgedStorageKey); } catch (_error) {}
+        }
+      }
+
+      lastDueSignature = nextSignature;
+      if (acknowledgedDueSignature === lastDueSignature) {
         stopAlarmLoop();
         return;
       }
       if (alarmArmed) startAlarmLoop();
     },
+    acknowledgeCurrent() {
+      if (!dueActive || !lastDueSignature) return;
+      acknowledgedDueSignature = lastDueSignature;
+      try { localStorage.setItem(acknowledgedStorageKey, acknowledgedDueSignature); } catch (_error) {}
+      stopAlarmLoop();
+    },
     stop() {
       dueActive = false;
       lastDueSignature = '';
+      acknowledgedDueSignature = '';
+      try { localStorage.removeItem(acknowledgedStorageKey); } catch (_error) {}
       stopAlarmLoop();
     },
     isArmed() {

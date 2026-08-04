@@ -251,7 +251,12 @@
     }
   }
 
+  function acknowledgeCurrentTransferAlarm() {
+    window.ParkingTransferAlarm?.acknowledgeCurrent?.();
+  }
+
   async function openDueTransfers() {
+    acknowledgeCurrentTransferAlarm();
     const today = window.P6CSV.localToday();
     if (datePicker.value !== today) {
       datePicker.value = today;
@@ -567,6 +572,7 @@
   mobileLaneTabs?.addEventListener('click', (event) => {
     const button = event.target.closest('[data-lane-target]');
     if (!button) return;
+    if (button.dataset.laneTarget === 'transfer') acknowledgeCurrentTransferAlarm();
     setActiveMobileLane(button.dataset.laneTarget);
   });
 
@@ -582,7 +588,9 @@
     if (event.key === 'End') nextIndex = buttons.length - 1;
 
     event.preventDefault();
-    setActiveMobileLane(buttons[nextIndex].dataset.laneTarget, { focus: true });
+    const nextLane = buttons[nextIndex].dataset.laneTarget;
+    if (nextLane === 'transfer') acknowledgeCurrentTransferAlarm();
+    setActiveMobileLane(nextLane, { focus: true });
   });
 
   datePicker.addEventListener('change', render);
