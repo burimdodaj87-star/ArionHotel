@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>P6 Tagesliste</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-mark">P6</span><span>P6 Tagesliste</span></div>
+      <a class="nav-link" href="index.html">Neue CSV hochladen</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <div id="loadingState" class="card loading-state">Daten werden geladen …</div>
+
+    <section id="noDataState" class="card no-data-state" hidden>
+      <h2>Noch keine CSV-Datei vorhanden</h2>
+      <p>Öffne zuerst die Upload-Seite und lade die Buchungsdatei hoch.</p>
+      <a class="btn btn-primary" href="index.html">CSV hochladen</a>
+    </section>
+
+    <div id="dashboardContent" hidden>
+      <section class="dashboard-head">
+        <div>
+          <p class="eyebrow">Nur Parkplatz P6</p>
+          <h1>Tagesliste</h1>
+          <div id="datasetMeta" class="dataset-meta"></div>
+        </div>
+        <div class="date-panel">
+          <label for="datePicker">Datum auswählen</label>
+          <input id="datePicker" type="date">
+        </div>
+      </section>
+
+      <section class="summary-grid" aria-label="Tagesübersicht">
+        <div class="summary-card"><span>Check-Ins</span><strong id="checkInTotal">0</strong></div>
+        <div class="summary-card"><span>Check-Outs</span><strong id="checkOutTotal">0</strong></div>
+        <div class="summary-card"><span>Erledigt</span><strong id="completedTotal">0 / 0</strong></div>
+      </section>
+
+      <section class="lists-grid">
+        <article class="card list-card">
+          <header class="list-head">
+            <div class="list-title-wrap">
+              <div class="list-icon">IN</div>
+              <div><h2>Check-In</h2><span class="dataset-meta">Datum aus Spalte „from“</span></div>
+            </div>
+            <span id="checkInBadge" class="count-badge">0</span>
+          </header>
+          <div id="checkInContainer"></div>
+        </article>
+
+        <article class="card list-card">
+          <header class="list-head">
+            <div class="list-title-wrap">
+              <div class="list-icon">OUT</div>
+              <div><h2>Check-Out</h2><span class="dataset-meta">Datum aus Spalte „to“</span></div>
+            </div>
+            <span id="checkOutBadge" class="count-badge">0</span>
+          </header>
+          <div id="checkOutContainer"></div>
+        </article>
+      </section>
+
+      <p class="footer-note">Es werden ausschließlich Buchungen mit Parking = P6 angezeigt. Status CANCEL wird nicht angezeigt. Die Preise werden unverändert aus der Spalte Pricing übernommen.</p>
+    </div>
+  </main>
+
+  <script src="csv.js"></script>
+  <script src="db.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
